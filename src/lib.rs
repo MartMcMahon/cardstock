@@ -1,8 +1,8 @@
 use wasm_bindgen::prelude::*;
 
-mod coin;
+mod cardstock;
 // mod sock;
-use crate::coin::*;
+use crate::cardstock::*;
 
 #[wasm_bindgen]
 extern "C" {
@@ -15,5 +15,5 @@ extern "C" {
 pub fn start() {
     log("ok. cool");
     // sock::socket();
-    coin::main();
+    cardstock::main();
 }
