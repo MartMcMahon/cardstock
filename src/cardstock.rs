@@ -4,6 +4,7 @@ use bevy::{
         ElementState,
     },
     prelude::*,
+    window::PresentMode,
 };
 
 use wasm_bindgen::prelude::*;
@@ -62,7 +63,7 @@ pub fn main() {
         .insert_resource(WindowDescriptor {
             width: 800.0,
             height: 600.0,
-            vsync: true,
+            present_mode: PresentMode::Fifo,
             ..Default::default()
         })
         .insert_resource(CursorState {
