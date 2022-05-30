@@ -14,6 +14,8 @@ extern "C" {
     pub fn alert(s: &str);
     #[wasm_bindgen(js_namespace = console)]
     fn log(s: &str);
+
+    // fn send(s: &str);
 }
 
 struct CursorState {
@@ -150,8 +152,9 @@ fn drag_entities(
                 button: MouseButton::Left,
                 state: ElementState::Released,
             } => {
-                log("released");
                 cursor_state.holding = None;
+                log("released");
+                // send("released");
             }
             _ => {
                 log("not left");
