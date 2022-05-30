@@ -1,7 +1,3 @@
-import init, { start } from "./pkg/cardstock.js";
-
-export const name = "mod";
-
 export class Connection {
   constructor() {
     this.isConnected = false;
@@ -32,9 +28,6 @@ setTimeout(() => {
   conn.send("test msg 3 from js");
 }, 1000);
 
-init().then(() => {
-  start();
-});
 
 export function send(msg) {
   console.log("bevy sending ", msg);

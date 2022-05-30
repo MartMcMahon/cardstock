@@ -15,7 +15,7 @@ extern "C" {
     fn log(s: &str);
 }
 
-#[wasm_bindgen(module = "mod")]
+#[wasm_bindgen(module = "/mod.js")]
 extern "C" {
     fn send(s: &str);
 }

@@ -8,5 +8,11 @@
   <body>
     <div id="root"></div>
     <script type="module" src="./mod.js"></script>
+    <script type="module">
+      import init, { start } from "./pkg/cardstock.js";
+      init().then(() => {
+        start();
+      });
+    </script>
   </body>
 </html>
