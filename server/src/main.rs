@@ -20,6 +20,7 @@ async fn handle_connection(peer: SocketAddr, stream: TcpStream) -> Result<()> {
     println!("New WebSocket connection: {}", peer);
 
     while let Some(msg) = ws_stream.next().await {
+        println!("waiting on msg");
         let msg = msg?;
         if msg.is_text() || msg.is_binary() {
             println!("got message: {}", msg);

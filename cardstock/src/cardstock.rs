@@ -6,16 +6,18 @@ use bevy::{
     prelude::*,
     window::PresentMode,
 };
-
 use wasm_bindgen::prelude::*;
-use web_sys::Element;
+
 #[wasm_bindgen]
 extern "C" {
     pub fn alert(s: &str);
     #[wasm_bindgen(js_namespace = console)]
     fn log(s: &str);
+}
 
-    // fn send(s: &str);
+#[wasm_bindgen(module = "mod")]
+extern "C" {
+    fn send(s: &str);
 }
 
 struct CursorState {
@@ -76,6 +78,7 @@ pub fn main() {
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
         .add_startup_system(setup_button)
+        .add_startup_system(setup_connection)
         .add_system(button_system)
         // .add_system(print_mouse_events_system)
         .add_system(text_input_system)
@@ -327,4 +330,10 @@ fn setup(
             width: 312.,
             height: 445.,
         });
+}
+
+fn setup_connection() {
+    unsafe {
+        send("test!!!");
+    }
 }

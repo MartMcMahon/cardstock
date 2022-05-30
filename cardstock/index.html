@@ -7,30 +7,6 @@
   </head>
   <body>
     <div id="root"></div>
-    <script type="module">
-      import init, { start } from "./pkg/cardstock.js";
-      init().then(() => {
-        start();
-      });
-
-      let ws = new WebSocket(
-        "ws://localhost:9999"
-      );
-
-      // Connection opened
-      ws.addEventListener("open", function(event) {
-        ws.send("Hello Server!");
-      });
-
-      // Listen for messages
-      ws.addEventListener("message", function(event) {
-        console.log("Message from server ", event.data);
-      });
-
-      function send(msg) {
-        ws.send(msg);
-      }
-
-    </script>
+    <script type="module" src="./mod.js"></script>
   </body>
 </html>
