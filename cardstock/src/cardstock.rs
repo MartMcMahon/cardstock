@@ -336,6 +336,18 @@ fn setup(
             width: 312.,
             height: 445.,
         });
+
+    commands
+        .spawn_bundle(SpriteBundle {
+            texture: asset_server.load("images/island.png"),
+            transform: Transform::from_xyz(0., 0., 0.),
+            ..Default::default()
+        })
+        .insert(Card)
+        .insert(Movable {
+            width: 312.,
+            height: 445.,
+        });
 }
 
 fn setup_connection() {
