@@ -17,7 +17,8 @@ extern "C" {
 
 #[wasm_bindgen(module = "/mod.js")]
 extern "C" {
-    fn send(s: &str);
+    fn send(s: &str) -> Option<String>;
+    fn read() -> Option<String>;
 }
 
 struct CursorState {
@@ -56,11 +57,6 @@ struct Card;
 
 #[derive(Component)]
 struct InputText;
-
-struct GameState {
-    provinces: Vec<String>,
-    cities: Vec<String>,
-}
 
 pub fn main() {
     App::new()
@@ -157,7 +153,17 @@ fn drag_entities(
             } => {
                 cursor_state.holding = None;
                 log("released");
-                // send("released");
+                send("released");
+                let res = read();
+
+                match res {
+                    Some(s) => {
+                        log(format!("received {} from echo server", s).as_str());
+                    }
+                    None => {
+                        log("got None back");
+                    }
+                }
             }
             _ => {
                 log("not left");
@@ -333,7 +339,13 @@ fn setup(
 }
 
 fn setup_connection() {
-    unsafe {
-        send("test!!!");
+    let res = send("test!!!");
+    match res {
+        Some(s) => {
+            log(format!("received {} from echo server", s).as_str());
+        }
+        None => {
+            log("got None back");
+        }
     }
 }
