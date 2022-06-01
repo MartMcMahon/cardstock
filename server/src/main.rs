@@ -33,7 +33,7 @@ async fn handle_connection(peer: SocketAddr, stream: TcpStream) -> Result<()> {
 
 #[tokio::main]
 async fn main() {
-    let addr = "127.0.0.1:9999";
+    let addr = "0.0.0.0:9999";
     let listener = TcpListener::bind(&addr)
         .await
         .expect("should be able to listen on port");
