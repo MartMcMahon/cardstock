@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@types/node": "^17.0.38",
+    "cors": "^2.8.5",
     "express": "^4.18.1",
     "typescript": "^4.7.2",
     "ws": "^8.7.0"
