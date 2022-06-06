@@ -4,3 +4,6 @@ pkg
 
 server/bin
 server/node_modules
+
+keys
+server/src/.env.dev.ts
