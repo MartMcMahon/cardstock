@@ -56,7 +56,7 @@ export const incoming = () => {
 setInterval(() => {
   if (outdata) {
     send(outdata);
-    outgoing = null;
+    outdata = null;
   }
 }, 200);
 
