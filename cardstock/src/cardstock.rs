@@ -8,6 +8,8 @@ use bevy::{
 };
 use wasm_bindgen::prelude::*;
 
+use serde_json::json;
+
 #[wasm_bindgen]
 extern "C" {
     pub fn alert(s: &str);
@@ -17,8 +19,10 @@ extern "C" {
 
 #[wasm_bindgen(module = "/mod.js")]
 extern "C" {
-    fn send(s: &str) -> Option<String>;
-    fn read() -> Option<String>;
+    // fn send(s: &str) -> Option<String>;
+    // fn read() -> String;
+    fn incoming() -> String;
+    fn outgoing(s: &str) -> Option<String>;
 }
 
 struct CursorState {
@@ -74,7 +78,7 @@ pub fn main() {
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
         .add_startup_system(setup_button)
-        .add_startup_system(setup_connection)
+        // .add_startup_system(setup_connection)
         .add_system(button_system)
         // .add_system(print_mouse_events_system)
         .add_system(text_input_system)
@@ -115,8 +119,8 @@ fn drag_entities(
                     if id == entity.id() {
                         transform.translation.x = cursor_moved_event.position.x - 400.;
                         transform.translation.y = cursor_moved_event.position.y - 300.;
-                        log(format!("transform: {:?}", transform).as_str());
-                        log(format!("cursor_event: {:?}", cursor_moved_event.position).as_str());
+                        // log(format!("transform: {:?}", transform).as_str());
+                        // log(format!("cursor_event: {:?}", cursor_moved_event.position).as_str());
                     }
                 }
                 None => {}
@@ -136,11 +140,11 @@ fn drag_entities(
                 log("left pressed");
                 // grab island
                 for (mut entity, mut transform, sprite, movable) in movable_q.iter_mut() {
-                    log(format!("transform: {:?}", transform).as_str());
-                    log(
-                        format!("cursor_state: {:?}, {:?}", cursor_state.x, cursor_state.y)
-                            .as_str(),
-                    );
+                    // log(format!("transform: {:?}", transform).as_str());
+                    // log(
+                    // format!("cursor_state: {:?}, {:?}", cursor_state.x, cursor_state.y)
+                    //     .as_str(),
+                    // );
                     // commands.entity(entity).insert(Held);
                     if movable.within_bounds(&transform, (cursor_state.x, cursor_state.y)) {
                         cursor_state.holding = Some(entity.id());
@@ -153,17 +157,9 @@ fn drag_entities(
             } => {
                 cursor_state.holding = None;
                 log("released");
-                send("released");
-                let res = read();
-
-                match res {
-                    Some(s) => {
-                        log(format!("received {} from echo server", s).as_str());
-                    }
-                    None => {
-                        log("got None back");
-                    }
-                }
+                outgoing(json!({"ok": "testing ffrom rust!"}).to_string().as_str());
+                let res = incoming();
+                log(format!("received {} from echo server", res).as_str());
             }
             _ => {
                 log("not left");
@@ -350,14 +346,14 @@ fn setup(
         });
 }
 
-fn setup_connection() {
-    let res = send("test!!!");
-    match res {
-        Some(s) => {
-            log(format!("received {} from echo server", s).as_str());
-        }
-        None => {
-            log("got None back");
-        }
-    }
-}
+// async fn setup_connection() {
+//     let res = send("test!!!");
+//     match res {
+//         Some(s) => {
+//             log(format!("received {} from echo server", s).as_str());
+//         }
+//         None => {
+//             log("got None back");
+//         }
+//     }
+// }
