@@ -62,7 +62,7 @@ button {
   flex-direction: row;
   justify-content: center;
 
-  .graph {
+  .graph-container {
     display: flex;
     flex: 1;
     justify-content: center;

@@ -19,12 +19,12 @@ const initialState = {
   user_id: "test",
 };
 
-const reducer = (state = initialState, action) => {
+const reducer = (prevState = initialState, action) => {
   switch (action.type) {
     case "selectCard":
-      return { ...state, selectedCard: action.card };
+      return { ...prevState, selectedCard: action.card };
     default:
-      return state;
+      return prevState;
   }
 };
 

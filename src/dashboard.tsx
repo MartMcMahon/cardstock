@@ -4,6 +4,7 @@ import { useSelect } from "./hooks/useSelect";
 import CardMarketButtons from "./cardMarketButtons";
 import Networth from "./networth";
 import "./dashboard.css";
+import Graph from "./graph";
 
 const scryfall_url = "https://api.scryfall.com/";
 
@@ -77,7 +78,7 @@ const Dashboard = () => {
       });
   }
 
-  function scryfall_get_id(id) {
+  function scryfall_get_by_id(id) {
     let card = checkCache(id);
     if (card) {
       return card;
@@ -86,6 +87,7 @@ const Dashboard = () => {
       .then((response) => response.json())
       .then((data) => {
         console.log(data);
+        dispatch({ type: "selectCard", card: data });
         // setSelectedCard(data);
         // setPrice(getPrice(data));
       });
@@ -131,9 +133,9 @@ const Dashboard = () => {
             placeholder="card name"
             value={cardNameInput}
           />
-          <button onClick={getCard}>search</button>
-          <button onClick={randomCard}>random</button>
-          <button onClick={logout}>logout</button>
+          <button onClick={() => getCard()}>search</button>
+          <button onClick={() => randomCard()}>random</button>
+          <button onClick={() => logout()}>logout</button>
         </div>
       </div>
 
@@ -151,7 +153,8 @@ const Dashboard = () => {
                   className="portCardEntry"
                   key={card.name}
                   onClick={() => {
-                    dispatch({ type: "selectCard", card: card });
+                    const c = scryfall_get_by_id(card.id);
+                    console.log("c", c);
                   }}
                 >
                   {card.name}
@@ -161,12 +164,16 @@ const Dashboard = () => {
           </div>
         </div>
         <div className="center">
-          <div className="graph">Graph</div>
+          <div className="graph-container">
+            Graph
+            <Graph />
+          </div>
           <div className="price-and-buttons">
             <div className="price">
               <h3>price{price}</h3>
             </div>
             <CardMarketButtons />
+            You have X of this card
           </div>
         </div>
         <div className="right">
