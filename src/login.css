@@ -1,0 +1,22 @@
+body {
+  display: flex;
+  justify-content: center;
+}
+
+.sign-up {
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  width: 100%;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+
+  input {
+    line-height: 2;
+    margin: 10px;
+  }
+}

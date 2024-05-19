@@ -5,15 +5,44 @@ const server = require("http").createServer(app);
 const wss = new WebSocket.Server({ server });
 const mongo = require("mongodb");
 
-const uri =
-  "mongodb+srv://admin:admin@localhost/cardstock?retryWrites=true&w=majority";
+const uri = "mongodb://localhost/cardstock?retryWrites=true&w=majority";
 const client = new mongo.MongoClient(uri);
+
+// const printDB = async () => {
+//   await client.connect();
+//   const users = client.db("cardstock").collection("users");
+//   console.log("users: ", users);
+// };
 
 const getUser = async (id) => {
   await client.connect();
   const users = client.db("cardstock").collection("users");
   const user = await users.findOne({ id });
   return user;
+};
+
+const login = async (username, passHash) => {
+  // TODO: security logic
+  return getUser(username).then((user) => {
+    if (user.passHash === passHash) {
+      return { user_id: user.id, username: user.username, token: "token" };
+    } else {
+      return { error: "Invalid password" };
+    }
+  });
+};
+
+const auth = async (username, token) => {
+  await client.connect();
+  const users = client.db("cardstock").collection("users");
+  let user = await users.findOne({ id: username });
+  if ( !user ) {
+    user = {id: "", token: ""};
+  }
+  if (user.token === token) {
+    return user;
+  }
+  return { error: "Invalid token" };
 };
 
 const registerUser = async (id, username, passHash) => {
@@ -23,8 +52,32 @@ const registerUser = async (id, username, passHash) => {
   if (user) {
     return { error: "User already exists" };
   }
-  await users.insertOne({ id, username, passHash });
+  await users.insertOne({ id, username, passHash, token: "token" });
   return { id, username, passHash };
+};
+
+const buyCard = async (user_id, card_id, amount) => {
+  await client.connect();
+  const users = client.db("cardstock").collection("users");
+  const user = await users.findOne({ id: user_id });
+  if (!user) {
+    return { error: "User not found" };
+  }
+  const position = user.cards[card_id];
+  position[amount] += 1;
+  // TODO: update avg price
+
+  // user.cards[card_id]  amount });
+
+  const card = await user.cards.findOne({ id: card_id });
+  if (!card) {
+    return { error: "Card not found" };
+  }
+  if (card.amount < amount) {
+    return { error: "Not enough cards" };
+  }
+  await user.cards.updateOne({ id: cardId }, { $inc: { amount: -amount } });
+  return { id: card_id, amount };
 };
 
 function broadcast(outgoing) {
@@ -41,8 +94,9 @@ function single(ws, outgoing) {
 const users = {};
 
 wss.on("connection", (ws) => {
+  single(ws, { action: "connected" });
   ws.on("message", (message) => {
-    console.log("received: %s", message)
+    console.log("received: %s", message);
     let msg = JSON.parse(message);
 
     switch (msg.action) {
@@ -56,12 +110,22 @@ wss.on("connection", (ws) => {
         });
         break;
 
-      case "registerUser":
-        registerUser(msg.data.id, msg.data.username, msg.data.passHash).then(
-          (user) => {
-            single(ws, { action: "registerRes", data: user });
-          }
-        );
+      case "loginWithCreds":
+        login(msg.usernameInput, msg.passwordInput).then((user) => {
+          single(ws, { action: "auth", user });
+        });
+        break;
+
+      case "loginWithToken":
+        auth(msg.username, msg.token).then((user) => {
+          single(ws, { action: "auth", user });
+        });
+        break;
+
+      case "registerNewUser":
+        registerUser(msg.user_id, msg.username, msg.passHash).then((user) => {
+          single(ws, { action: "registerSuccess", data: user });
+        });
 
       // case "fetchUser":
       //   if (users[msg.data.id] === undefined) {
@@ -72,7 +136,7 @@ wss.on("connection", (ws) => {
       //   break;
 
       case "setUser":
-        users[msg.data.id] = msg.data;
+        users[msg.id] = msg.data;
         break;
       case "buy":
         console.log("buying", msg.cardId);

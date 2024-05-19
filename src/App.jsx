@@ -1,14 +1,28 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Outlet, Navigate } from "react-router-dom";
-import Login from "./login";
-// import Dashboard from "./dashboard";
-import { useState } from "react";
+import { useNavigate, Outlet } from "react-router-dom";
 import Api from "./api";
 
+import { firebaseConfig } from "./firebaseConfig.jsx";
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+
+const firebase_app = initializeApp(firebaseConfig);
+const auth = getAuth();
+auth.languageCode = "it";
+
 const App = () => {
-  const state = useSelector((state) => state);
-  // const dispatch = useDispatch();
+  const { authenticated } = useSelector((state) => state);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (authenticated) {
+      navigate("/");
+    } else {
+      navigate("/login");
+    }
+  }, [authenticated]);
 
   // const [page, setPage] = useState(<div>loading...</div>);
   // useEffect(() => {
@@ -25,14 +39,14 @@ const App = () => {
 
   return (
     <>
-      {state.authenticated ? (
-        <div>
-          <Api />
-          <Outlet />
-        </div>
-      ) : (
-        <Login />
-      )}
+      <Api />
+      {/* {state.authenticated ? ( */}
+      <div>
+        <Outlet />
+      </div>
+      {/* ) : ( */}
+      {/*   <Login /> */}
+      {/* {/1* )} *1/} */}
     </>
   );
 
