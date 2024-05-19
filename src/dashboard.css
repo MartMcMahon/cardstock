@@ -1,37 +1,87 @@
 .main {
   display: flex;
-  flex-direction: row;
-  justify-content: center;
-  height: 100%;
+  flex-direction: column;
 }
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.card-search {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  input {
+    display: flex;
+    margin: 0 10px;
+    min-width: 300px;
+  }
+
+  button {
+    min-width: 100px;
+  }
+}
+
+button {
+  display: flex;
+  margin: 0 10px;
+  max-height: 40px;
+}
+
+.panels {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
 .left {
   display: flex;
   flex-direction: column;
   justify-content: center;
   height: 100%;
-}
-.center {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  height: 100%;
-  margin-left: 20px;
 
-  .card-search {
+  .networth {
     display: flex;
     flex-direction: row;
+    justify-content: space-between;
   }
 }
+
+.portCardList {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.center {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  justify-content: center;
+
+  .graph {
+    display: flex;
+    flex: 1;
+    justify-content: center;
+  }
+  .price-and-buttons {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+}
+
 .right {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  height: 100%;
-  margin-left: 20px;
-}
 
-.portCardEntry {
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
+  .card-display {
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+  }
 }

@@ -27,9 +27,33 @@ const Dashboard = () => {
   };
 
   const sample = [
-    { name: "Island", id: "1cb1ac28-ee04-4892-97ea-2cfdebbafcad" },
-    { name: "Totally Lost", id: "05f0b6ce-eb70-4f42-9360-c7d09f48a5c5" },
-    { name: "Impulse", id: "2e48fe92-a2d7-49a8-a05d-6f032c532f14" },
+    {
+      name: "Island",
+      id: "1cb1ac28-ee04-4892-97ea-2cfdebbafcad",
+      prices: { usd: 0.1 },
+      image_uris: {
+        normal:
+          "https://c1.scryfall.com/file/scryfall-cards/normal/front/1/c/1cb1ac28-ee04-4892-97ea-2cfdebbafcad.jpg?1562925073",
+      },
+    },
+    {
+      name: "Totally Lost",
+      id: "05f0b6ce-eb70-4f42-9360-c7d09f48a5c5",
+      prices: { usd: 0.1 },
+      image_uris: {
+        normal:
+          "https://c1.scryfall.com/file/scryfall-cards/normal/front/1/c/1cb1ac28-ee04-4892-97ea-2cfdebbafcad.jpg?1562925073",
+      },
+    },
+    {
+      name: "Impulse",
+      id: "2e48fe92-a2d7-49a8-a05d-6f032c532f14",
+      prices: { usd: 0.1 },
+      image_uris: {
+        normal:
+          "https://c1.scryfall.com/file/scryfall-cards/normal/front/1/c/1cb1ac28-ee04-4892-97ea-2cfdebbafcad.jpg?1562925073",
+      },
+    },
   ];
 
   useEffect(() => {
@@ -98,28 +122,8 @@ const Dashboard = () => {
 
   return (
     <div className="main">
-      <div className="left">
+      <div className="header">
         Dashboard
-        <NetWorth />
-        <div>
-          <div className="portCardList">Your Cards</div>
-          {sample.map((card) => {
-            return (
-              <div
-                className="portCardEntry"
-                key={card.name}
-                onMouseEnter={(e) => {
-                  scryfall_get_id(card.id);
-                }}
-              >
-                {card.name}
-              </div>
-            );
-          })}
-          <button onClick={logout}>logout</button>
-        </div>
-      </div>
-      <div className="center">
         <div className="card-search">
           <input
             type="text"
@@ -129,22 +133,53 @@ const Dashboard = () => {
           />
           <button onClick={getCard}>search</button>
           <button onClick={randomCard}>random</button>
+          <button onClick={logout}>logout</button>
         </div>
-        <div className="card-display">
-          <div className="price">
-            <h3>{price}</h3>
+      </div>
+
+      <div className="panels">
+        <div className="left">
+          <div className="networth">
+            Value: <Networth />
+          </div>
+          Cash : $0.00
+          <div>
+            <div className="portCardList">Your Cards</div>
+            {sample.map((card) => {
+              return (
+                <div
+                  className="portCardEntry"
+                  key={card.name}
+                  onClick={() => {
+                    dispatch({ type: "selectCard", card: card });
+                  }}
+                >
+                  {card.name}
+                </div>
+              );
+            })}
           </div>
         </div>
-        <CardMarketButtons />
-      </div>
-      <div className="right">
-        {selectedCard && selectedCard.image_uris && (
-          <img
-            src={selectedCard.image_uris.normal}
-            alt={selectedCard.name}
-            width={"300px"}
-          />
-        )}
+        <div className="center">
+          <div className="graph">Graph</div>
+          <div className="price-and-buttons">
+            <div className="price">
+              <h3>price{price}</h3>
+            </div>
+            <CardMarketButtons />
+          </div>
+        </div>
+        <div className="right">
+          <div className="card-display">
+            {selectedCard && selectedCard.image_uris && (
+              <img
+                src={selectedCard.image_uris.normal}
+                alt={selectedCard.name}
+                width={"300px"}
+              />
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -20,10 +20,15 @@ const initialState = {
 };
 
 const reducer = (state = initialState, action) => {
-  return state;
+  switch (action.type) {
+    case "selectCard":
+      return { ...state, selectedCard: action.card };
+    default:
+      return state;
+  }
 };
 
 const store = configureStore({ reducer });
 export default store;
 export type Store = typeof store;
-export type RootState = ReturnType<Store['getState']>;
+export type RootState = ReturnType<Store["getState"]>;
