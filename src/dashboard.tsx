@@ -18,9 +18,9 @@ function checkCache(id) {
 
 const Dashboard = () => {
   const [cardNameInput, setCardNameInput] = useState("");
-  const [price, setPrice] = useState(0.0);
-
-  const { selectedCard } = useSelect((state) => state);
+  const { cash, holdings, selectedCard, simple_price } = useSelect(
+    (state) => state
+  );
   const dispatch = useDispatch();
 
   const logout = () => {
@@ -57,11 +57,11 @@ const Dashboard = () => {
     },
   ];
 
-  useEffect(() => {
-    if (selectedCard) {
-      setPrice(getPrice(selectedCard));
-    }
-  }, [selectedCard]);
+  // useEffect(() => {
+  //   if (selectedCard) {
+  //     setPrice(getPrice(selectedCard));
+  //   }
+  // }, [selectedCard]);
 
   function getCard() {
     fetch(scryfall_url + "cards/search?q=" + cardNameInput)
@@ -144,7 +144,7 @@ const Dashboard = () => {
           <div className="networth">
             Value: <Networth />
           </div>
-          Cash : $0.00
+          Cash : ${cash}
           <div>
             <div className="portCardList">Your Cards</div>
             {sample.map((card) => {
@@ -165,15 +165,14 @@ const Dashboard = () => {
         </div>
         <div className="center">
           <div className="graph-container">
-            Graph
             <Graph />
           </div>
           <div className="price-and-buttons">
             <div className="price">
-              <h3>price{price}</h3>
+              <h3>price {simple_price}</h3>
             </div>
             <CardMarketButtons />
-            You have X of this card
+            You have {holdings[selectedCard.id]} of this card
           </div>
         </div>
         <div className="right">
@@ -193,25 +192,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
-const getPrice = (card) => {
-  if (card.prices.usd) {
-    return card.prices.usd;
-  }
-  if (card.prices.usd_foil) {
-    return card.prices.usd_foil;
-  }
-  if (card.prices.usd_etched) {
-    return card.prices.usd_etched;
-  }
-  if (card.prices.eur) {
-    return card.prices.eur;
-  }
-  if (card.prices.eur_foil) {
-    return card.prices.eur_foil;
-  }
-  if (card.prices.tix) {
-    return card.prices.tix;
-  }
-  return 0;
-};

@@ -12,11 +12,8 @@ const CardMarketButtons = () => {
         className="card-market-button"
         onClick={() =>
           dispatch({
-            type: "sendwsMessage",
-            msg: JSON.stringify({
-              action: "buy",
-              cardId: selectedCard.id,
-            }),
+            type: "buyCard",
+            card: selectedCard,
           })
         }
       >
