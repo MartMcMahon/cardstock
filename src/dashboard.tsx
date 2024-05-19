@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { useSelect } from "./hooks/useSelect";
 import CardMarketButtons from "./cardMarketButtons";
-import NetWorth from "./networth";
+import Networth from "./networth";
 import "./dashboard.css";
 
-let scryfall_url = "https://api.scryfall.com/";
+const scryfall_url = "https://api.scryfall.com/";
 
 const cache = {};
 function checkCache(id) {
@@ -18,7 +19,7 @@ const Dashboard = () => {
   const [cardNameInput, setCardNameInput] = useState("");
   const [price, setPrice] = useState(0.0);
 
-  const state = useSelector((state) => state);
+  const { selectedCard } = useSelect((state) => state);
   const dispatch = useDispatch();
 
   const logout = () => {
@@ -32,10 +33,10 @@ const Dashboard = () => {
   ];
 
   useEffect(() => {
-    if (state.selectedCard) {
-      setPrice(getPrice(state.selectedCard));
+    if (selectedCard) {
+      setPrice(getPrice(selectedCard));
     }
-  }, [state.selectedCard]);
+  }, [selectedCard]);
 
   function getCard() {
     fetch(scryfall_url + "cards/search?q=" + cardNameInput)
@@ -137,10 +138,10 @@ const Dashboard = () => {
         <CardMarketButtons />
       </div>
       <div className="right">
-        {state.selectedCard && state.selectedCard.image_uris && (
+        {selectedCard && selectedCard.image_uris && (
           <img
-            src={state.selectedCard.image_uris.normal}
-            alt={state.selectedCard.name}
+            src={selectedCard.image_uris.normal}
+            alt={selectedCard.name}
             width={"300px"}
           />
         )}

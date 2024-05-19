@@ -1,8 +1,9 @@
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { useSelect } from "./hooks/useSelect";
 import "./cardMarketButtons.css";
 
-const CardMarketButtons = (props) => {
-  const state = useSelector((state) => state);
+const CardMarketButtons = () => {
+  const { selectedCard } = useSelect((state) => state);
   const dispatch = useDispatch();
 
   return (
@@ -12,7 +13,10 @@ const CardMarketButtons = (props) => {
         onClick={() =>
           dispatch({
             type: "sendwsMessage",
-            msg: JSON.stringify({ action: "buy", cardId: state.selectedCard.id }),
+            msg: JSON.stringify({
+              action: "buy",
+              cardId: selectedCard.id,
+            }),
           })
         }
       >
