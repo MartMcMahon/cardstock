@@ -1,27 +1,19 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useSelect } from "./hooks/useSelect";
 import CardMarketButtons from "./cardMarketButtons";
 import Networth from "./networth";
-import "./dashboard.css";
 import Graph from "./graph";
 
-const scryfall_url = "https://api.scryfall.com/";
-
-const cache = {};
-function checkCache(id) {
-  if (cache[id]) {
-    return cache[id];
-  }
-  return false;
-}
+import "./dashboard.css";
+import { fetchRandomCard } from "./api/scryfall";
 
 const Dashboard = () => {
   const [cardNameInput, setCardNameInput] = useState("");
-  const { cash, holdings, selectedCard, simple_price } = useSelect(
-    (state) => state
-  );
+  const { cash, selectedCard, simple_price } = useSelect((state) => state.main);
   const dispatch = useDispatch();
+
+  const holdings = {};
 
   const logout = () => {
     dispatch({ type: "logout" });
@@ -57,70 +49,9 @@ const Dashboard = () => {
     },
   ];
 
-  // useEffect(() => {
-  //   if (selectedCard) {
-  //     setPrice(getPrice(selectedCard));
-  //   }
-  // }, [selectedCard]);
-
-  function getCard() {
-    fetch(scryfall_url + "cards/search?q=" + cardNameInput)
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        if (data.object === "list") {
-          let d = data.data;
-          console.log(d);
-
-          // setSelectedCard(d[0]);
-          // setPrice(getPrice(d[0]));
-        }
-      });
-  }
-
-  function scryfall_get_by_id(id) {
-    let card = checkCache(id);
-    if (card) {
-      return card;
-    }
-    fetch(scryfall_url + "cards/" + id)
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        dispatch({ type: "selectCard", card: data });
-        // setSelectedCard(data);
-        // setPrice(getPrice(data));
-      });
-  }
-
-  function scryfall_search_by_name(nameSearchInput) {
-    fetch(scryfall_url + "cards/search?q=" + nameSearchInput)
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        if (data.object === "list") {
-          let d = data.data;
-          console.log(d);
-          // setSelectedCard(d[0]);
-          // setPrice(getPrice(d[0]));
-        }
-      });
-  }
-
-  function randomCard() {
-    fetch(scryfall_url + "cards/random")
-      .then((response) => response.json())
-      .then((data) => {
-        dispatch({ type: "selectCard", card: data });
-        // console.log(data);
-        // setSelectedCard(data);
-        // setPrice(getPrice(data));
-      });
-  }
-
-  const onPortEntryMouseLeave = (e) => {
-    // setSelectedCard({});
-  };
+  // const onPortEntryMouseLeave = (e) => {
+  //   // setSelectedCard({});
+  // };
 
   return (
     <div className="main">
@@ -133,8 +64,15 @@ const Dashboard = () => {
             placeholder="card name"
             value={cardNameInput}
           />
-          <button onClick={() => getCard()}>search</button>
-          <button onClick={() => randomCard()}>random</button>
+          <button onClick={() => console.log("search")}>search</button>
+          <button
+            onClick={() => {
+              console.log("rando");
+              dispatch(fetchRandomCard());
+            }}
+          >
+            random
+          </button>
           <button onClick={() => logout()}>logout</button>
         </div>
       </div>
@@ -147,14 +85,32 @@ const Dashboard = () => {
           Cash : ${cash}
           <div>
             <div className="portCardList">Your Cards</div>
+            {/* {Object.entries(holdings).map(([k, amount]: [string, object]) => { */}
+            {/* console.log(k); */}
+            {/* debugger; */}
+            {/* const card: Card = holdings[k]; */}
+            {/* return ( */}
+            <div
+              className="portCardEntry"
+              key={"card.name"}
+              onClick={() => {
+                // const c = scryfall_get_by_id(card.id);
+                // console.log("c", c);
+              }}
+            >
+              {"card.name"}
+            </div>
+            {/* ); */}
+            {/* })} */}
+
             {sample.map((card) => {
               return (
                 <div
                   className="portCardEntry"
                   key={card.name}
                   onClick={() => {
-                    const c = scryfall_get_by_id(card.id);
-                    console.log("c", c);
+                    // const c = scryfall_get_by_id(card.id);
+                    // console.log("c", c);
                   }}
                 >
                   {card.name}

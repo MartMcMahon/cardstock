@@ -1,6 +1,8 @@
-import { configureStore } from "@reduxjs/toolkit";
+import { combineReducers, configureStore } from "@reduxjs/toolkit";
+import { Card } from "./types/card";
+import scryfall_reducer from "./scryfall_reducer";
 
-const getPrice = (card) => {
+const getPrice = (card: Card) => {
   if (card.prices.usd) {
     return card.prices.usd;
   }
@@ -34,9 +36,15 @@ if (!holdings) {
   localStorage.setItem("holdings", JSON.stringify(holdings));
 }
 
+const cardPositions: { [key: string]: any } = {};
+Object.entries(([cardId, q]: [string, number]) => {
+  cardPositions[cardId] = { q };
+});
+
 const initialState = {
   authenticated: true,
   cash,
+  cardPositions,
   holdings,
   networth: cash,
   user_id: "test",
@@ -44,14 +52,16 @@ const initialState = {
   selectedCard: {},
 };
 
-type Card = { id: string };
-
 const reducer = (
   prevState = initialState,
   action: { type: string; card?: Card }
 ) => {
   switch (action.type) {
     case "selectCard":
+      if (!action.card) {
+        console.error("No card selected");
+        return prevState;
+      }
       return {
         ...prevState,
         selectedCard: action.card,
@@ -79,7 +89,16 @@ const reducer = (
   }
 };
 
-const store = configureStore({ reducer });
+const rootReducer = combineReducers({
+  main: reducer,
+  scryfall: scryfall_reducer,
+});
+
+const store = configureStore({
+  reducer: rootReducer,
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware(),
+});
 export default store;
 export type Store = typeof store;
-export type RootState = ReturnType<Store["getState"]>;
+export type RootState = ReturnType<typeof rootReducer>;
+export type Dispatch = typeof store.dispatch;

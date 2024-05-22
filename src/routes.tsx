@@ -1,6 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
-// import Login from "./login";
 import Dashboard from "./dashboard";
 // import Portfolio from "./components/portfolio";
 // import Cards from "./components/cards";
@@ -14,7 +13,10 @@ const routes = createBrowserRouter([
     path: "/",
     element: <App />,
     children: [
-      { path: "/", element: <Dashboard /> },
+      {
+        path: "/",
+        element: <Dashboard />,
+      },
       //   {
       //     path: "/portfolio",
       //     element: <Portfolio />,
