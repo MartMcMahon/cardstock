@@ -41,9 +41,15 @@ const initialState = {
   networth: cash,
   user_id: "test",
   simple_price: 0,
+  selectedCard: {},
 };
 
-const reducer = (prevState = initialState, action) => {
+type Card = { id: string };
+
+const reducer = (
+  prevState = initialState,
+  action: { type: string; card?: Card }
+) => {
   switch (action.type) {
     case "selectCard":
       return {
@@ -52,6 +58,10 @@ const reducer = (prevState = initialState, action) => {
         simple_price: getPrice(action.card),
       };
     case "buyCard": {
+      if (!action.card) {
+        console.error("No card selected");
+        return prevState;
+      }
       const holdings = {
         ...prevState.holdings,
         [action.card.id]: (prevState.holdings[action.card.id] || 0) + 1,
