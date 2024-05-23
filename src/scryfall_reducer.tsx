@@ -13,15 +13,17 @@ const initialState: ScryfallState = {
 };
 
 const scryfallSlice = createSlice({
-  name: 'scryfall',
+  name: "scryfall",
   initialState,
   reducers: {
-    fetchRandomCard(state) {
+    fetchRandomCardReq(state) {
       state.loading = true;
       state.error = null;
     },
     fetchRandomCardSuccess(state, action: PayloadAction<any>) {
+      console.log("random card success");
       state.loading = false;
+
       state.card = action.payload;
     },
     fetchRandomCardFailed(state, action: PayloadAction<string>) {
@@ -31,5 +33,9 @@ const scryfallSlice = createSlice({
   },
 });
 
-export const { fetchRandomCard, fetchRandomCardSuccess, fetchRandomCardFailed } = scryfallSlice.actions;
+export const {
+  fetchRandomCardReq,
+  fetchRandomCardSuccess,
+  fetchRandomCardFailed,
+} = scryfallSlice.actions;
 export default scryfallSlice.reducer;

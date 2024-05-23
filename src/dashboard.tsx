@@ -4,14 +4,16 @@ import { useSelect } from "./hooks/useSelect";
 import CardMarketButtons from "./cardMarketButtons";
 import Networth from "./networth";
 import Graph from "./graph";
+import { Dispatch } from "./store";
+
+import { fetchCardById, fetchRandomCard } from "./api/scryfall";
 
 import "./dashboard.css";
-import { fetchRandomCard } from "./api/scryfall";
 
 const Dashboard = () => {
   const [cardNameInput, setCardNameInput] = useState("");
   const { cash, selectedCard, simple_price } = useSelect((state) => state.main);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<Dispatch>();
 
   const holdings = {};
 
@@ -110,7 +112,8 @@ const Dashboard = () => {
                   key={card.name}
                   onClick={() => {
                     // const c = scryfall_get_by_id(card.id);
-                    // console.log("c", c);
+                    console.log("c", card);
+                    dispatch(fetchCardById(card.id));
                   }}
                 >
                   {card.name}

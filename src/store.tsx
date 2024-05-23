@@ -52,7 +52,7 @@ const initialState = {
   selectedCard: {},
 };
 
-const reducer = (
+const main_reducer = (
   prevState = initialState,
   action: { type: string; card?: Card }
 ) => {
@@ -90,7 +90,7 @@ const reducer = (
 };
 
 const rootReducer = combineReducers({
-  main: reducer,
+  main: main_reducer,
   scryfall: scryfall_reducer,
 });
 

@@ -1,11 +1,13 @@
 import { Dispatch } from "../store";
-import {
-  SCRYFALL_FAIL,
-  SCRYFALL_FETCH_ID_SUCCESS,
-  SCRYFALL_FETCH_RANDOM_REQ,
-  SCRYFALL_FETCH_RANDOM_SUCCESS,
-  ScryfallActionTypes,
-} from "./actionTypes";
+// import {
+//   SCRYFALL_FAIL,
+//   SCRYFALL_FETCH_ID_REQ,
+//   SCRYFALL_FETCH_ID_SUCCESS,
+//   SCRYFALL_FETCH_RANDOM_REQ,
+//   SCRYFALL_FETCH_RANDOM_SUCCESS,
+// } from "./actionTypes";
+
+import scryfall_reducer, {fetchRandomCardReq,fetchRandomCardSuccess} from "../scryfall_reducer";
 
 const scryfall_url = "https://api.scryfall.com/";
 
@@ -32,20 +34,22 @@ function checkCache(id) {
 // });
 // }
 
-// function scryfall_get_by_id(id: string) {
-//   const card = checkCache(id);
-//   if (card) {
-//     return card;
-//   }
-//   fetch(scryfall_url + "cards/" + id)
-//     .then((response) => response.json())
-//     .then((data) => {
-//       console.log(data);
-//       dispatch({ type: "selectCard", card: data });
-//       // setSelectedCard(data);
-//       // setPrice(getPrice(data));
-//     });
-// }
+const fetchCardById = (id: string) => {
+  return async (dispatch: Dispatch) => {
+    dispatch({ type: SCRYFALL_FETCH_ID_REQ, id });
+    try {
+      const res = await fetch(scryfall_url + "cards/" + id);
+      if (!res.ok) {
+        throw new Error("Failed to fetch card by id");
+      }
+      const data = await res.json();
+      dispatch(scryfall_reducer.actions.fetchCardByIdSuccess(data));
+        // { type: SCRYFALL_FETCH_ID_SUCCESS, payload: data });
+    } catch (err: any) {
+      dispatch({ type: SCRYFALL_FAIL, payload: err.message });
+    }
+  };
+};
 
 // function scryfall_search_by_name(nameSearchInput) {
 //   fetch(scryfall_url + "cards/search?q=" + nameSearchInput)
@@ -62,32 +66,19 @@ function checkCache(id) {
 // }
 
 const fetchRandomCard = () => {
-  console.log("fetchRandomCard")
   return async (dispatch: Dispatch) => {
-    dispatch({ type: SCRYFALL_FETCH_RANDOM_REQ });
-  console.log("fetchRandomCard dispatch")
+    dispatch(fetchRandomCardReq());
     try {
       const res = await fetch(scryfall_url + "cards/random");
       if (!res.ok) {
         throw new Error("Failed to fetch random card");
       }
       const data = await res.json();
-      dispatch({ type: SCRYFALL_FETCH_RANDOM_SUCCESS, payload: data });
+      dispatch(fetchRandomCardSuccess(data));
     } catch (err: any) {
-      dispatch({ type: SCRYFALL_FAIL, payload: err.message });
+      dispatch({ type: "SCRYFALL_FAIL", payload: err.message });
     }
   };
 };
 
-// function randomCard() {
-//   fetch(scryfall_url + "cards/random")
-//     .then((response) => response.json())
-//     .then((data) => {
-//       dispatch({ type: "selectCard", card: data });
-//       // console.log(data);
-//       // setSelectedCard(data);
-//       // setPrice(getPrice(data));
-//     });
-// }
-
-export { fetchRandomCard };
+export {fetchCardById, fetchRandomCard };
