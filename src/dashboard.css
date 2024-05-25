@@ -71,6 +71,17 @@ button {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+
+    .price {
+      display: flex;
+    flex-direction: column;
+      text-align: right;
+
+      h3 {
+        margin: 12px;
+
+      }
+    }
   }
 }
 

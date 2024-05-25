@@ -32,6 +32,9 @@ interface MainState {
   cash: number;
   cardData: { [key: string]: Card };
   cardPositions: { [key: string]: number };
+  mouseCard: Card | null;
+  mousePrice: number;
+  mousePos: [number, number];
   networth: number;
   user_id: string;
   simple_price: number;
@@ -61,6 +64,9 @@ const initialState: MainState = {
   cash,
   cardData: card_data,
   cardPositions,
+  mouseCard: null,
+  mousePrice: 0,
+  mousePos: [0, 0],
   networth: cash,
   user_id: "test",
   simple_price: 0,
@@ -74,6 +80,17 @@ const mainSlice = createSlice({
     selectCard(state, action: PayloadAction<Card>) {
       state.selectedCard = action.payload;
       state.simple_price = getPrice(action.payload);
+    },
+    mouseCard(state, action: PayloadAction<{card: Card, pos: [number, number]}>) {
+      state.mouseCard = action.payload.card;
+      state.mousePrice = getPrice(action.payload.card);
+      state.mousePos = action.payload.pos;
+    },
+    mouseLeaveCard(state, action: PayloadAction<Card>) {
+      if (state.mouseCard && state.mouseCard.id === action.payload.id) {
+        state.mouseCard = null;
+        state.mousePrice = 0;
+      }
     },
     buyCard(
       state,

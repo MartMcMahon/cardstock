@@ -75,6 +75,7 @@ const fetchRandomCard = () => {
       const data = await res.json();
       dispatch(fetchRandomCardSuccess(data));
       dispatch(mainActions.fillCardData({ [data.id]: data }));
+      dispatch(mainActions.selectCard(data));
     } catch (err: any) {
       dispatch(fetchFailed(err.message));
     }
