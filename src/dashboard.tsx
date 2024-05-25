@@ -6,16 +6,16 @@ import Networth from "./networth";
 import Graph from "./graph";
 import { Dispatch } from "./store";
 
-import { fetchCardById, fetchRandomCard } from "./api/scryfall";
+import { fetchCardById, fetchRandomCard } from "./scryfall";
+import { mainActions } from "./main_reducer";
 
 import "./dashboard.css";
 
 const Dashboard = () => {
   const [cardNameInput, setCardNameInput] = useState("");
-  const { cash, selectedCard, simple_price } = useSelect((state) => state.main);
+  const { cardPositions, cardData, cash, selectedCard, simple_price } =
+    useSelect((state) => state.main);
   const dispatch = useDispatch<Dispatch>();
-
-  const holdings = {};
 
   const logout = () => {
     dispatch({ type: "logout" });
@@ -84,55 +84,54 @@ const Dashboard = () => {
           <div className="networth">
             Value: <Networth />
           </div>
-          Cash : ${cash}
+          Cash : ${cash.toFixed(2)}
           <div>
-            <div className="portCardList">Your Cards</div>
-            {/* {Object.entries(holdings).map(([k, amount]: [string, object]) => { */}
-            {/* console.log(k); */}
-            {/* debugger; */}
-            {/* const card: Card = holdings[k]; */}
-            {/* return ( */}
-            <div
-              className="portCardEntry"
-              key={"card.name"}
-              onClick={() => {
-                // const c = scryfall_get_by_id(card.id);
-                // console.log("c", c);
-              }}
-            >
-              {"card.name"}
-            </div>
-            {/* ); */}
-            {/* })} */}
+            <div className="portfolioCardList">Your Cards</div>
+            {Object.entries(cardPositions as { [key: string]: number }).map(
+              ([id, amount]: [string, number]) => {
+                let card;
+                if (id in cardData) {
+                  card = cardData[id];
+                } else {
+                  dispatch(fetchCardById(id));
+                  card = cardData[id];
+                  console.log("card", card);
+                }
+                if (!card) {
+                  return <div className="portfolioCardEntry"> ??error??</div>;
+                }
 
-            {sample.map((card) => {
-              return (
-                <div
-                  className="portCardEntry"
-                  key={card.name}
-                  onClick={() => {
-                    // const c = scryfall_get_by_id(card.id);
-                    console.log("c", card);
-                    dispatch(fetchCardById(card.id));
-                  }}
-                >
-                  {card.name}
-                </div>
-              );
-            })}
+                return (
+                  <div
+                    className="portfolioCardEntry"
+                    key={id}
+                    onClick={() => {
+                      dispatch(mainActions.selectCard(card));
+                    }}
+                  >
+                    {card.name} {amount !== 0 && `: ${amount}`}
+                  </div>
+                );
+              }
+            )}
           </div>
         </div>
         <div className="center">
           <div className="graph-container">
             <Graph />
           </div>
-          <div className="price-and-buttons">
-            <div className="price">
-              <h3>price {simple_price}</h3>
-            </div>
-            <CardMarketButtons />
-            You have {holdings[selectedCard.id]} of this card
-          </div>
+          {selectedCard && (
+            <>
+              <h2>{selectedCard.name}</h2>
+              <div className="price-and-buttons">
+                <div className="price">
+                  <h3>{simple_price}</h3>
+                </div>
+                <CardMarketButtons />
+                You have {cardPositions[selectedCard.id] || 0} of this card
+              </div>
+            </>
+          )}
         </div>
         <div className="right">
           <div className="card-display">

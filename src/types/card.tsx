@@ -1,4 +1,6 @@
-type Card = {
+import ScryfallCard from "./scryfallCard";
+
+type BasicCard = {
   id: string;
   name: string;
   prices: {
@@ -10,4 +12,5 @@ type Card = {
     tix: number;
   };
 };
-export type { Card };
+export type { BasicCard };
+export type Card = BasicCard | ScryfallCard;

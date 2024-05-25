@@ -49,7 +49,7 @@ button {
   }
 }
 
-.portCardList {
+.portfolioCardList {
   display: flex;
   flex-direction: column;
   justify-content: space-between;

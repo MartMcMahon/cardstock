@@ -1,23 +1,22 @@
-import { Dispatch } from "../store";
-// import {
-//   SCRYFALL_FAIL,
-//   SCRYFALL_FETCH_ID_REQ,
-//   SCRYFALL_FETCH_ID_SUCCESS,
-//   SCRYFALL_FETCH_RANDOM_REQ,
-//   SCRYFALL_FETCH_RANDOM_SUCCESS,
-// } from "./actionTypes";
-
-import scryfall_reducer, {fetchRandomCardReq,fetchRandomCardSuccess} from "../scryfall_reducer";
+import { Dispatch } from "./store";
+import {
+  fetchFailed,
+  fetchRandomCardReq,
+  fetchRandomCardSuccess,
+  fetchIdReq,
+  fetchIdSuccess,
+} from "./scryfall_reducer";
+import { mainActions } from "./main_reducer";
 
 const scryfall_url = "https://api.scryfall.com/";
 
-const cache = {};
-function checkCache(id) {
-  if (cache[id]) {
-    return cache[id];
-  }
-  return false;
-}
+// const cache = {};
+// function checkCache(id) {
+//   if (cache[id]) {
+//     return cache[id];
+//   }
+//   return false;
+// j
 
 // function getCard() {
 //   fetch(scryfall_url + "cards/search?q=" + cardNameInput)
@@ -36,17 +35,17 @@ function checkCache(id) {
 
 const fetchCardById = (id: string) => {
   return async (dispatch: Dispatch) => {
-    dispatch({ type: SCRYFALL_FETCH_ID_REQ, id });
+    dispatch(fetchIdReq());
     try {
       const res = await fetch(scryfall_url + "cards/" + id);
       if (!res.ok) {
         throw new Error("Failed to fetch card by id");
       }
       const data = await res.json();
-      dispatch(scryfall_reducer.actions.fetchCardByIdSuccess(data));
-        // { type: SCRYFALL_FETCH_ID_SUCCESS, payload: data });
+      dispatch(fetchIdSuccess(data));
+      dispatch(mainActions.fillCardData({ [id]: data }));
     } catch (err: any) {
-      dispatch({ type: SCRYFALL_FAIL, payload: err.message });
+      dispatch(fetchFailed(err.message));
     }
   };
 };
@@ -75,10 +74,11 @@ const fetchRandomCard = () => {
       }
       const data = await res.json();
       dispatch(fetchRandomCardSuccess(data));
+      dispatch(mainActions.fillCardData({ [data.id]: data }));
     } catch (err: any) {
-      dispatch({ type: "SCRYFALL_FAIL", payload: err.message });
+      dispatch(fetchFailed(err.message));
     }
   };
 };
 
-export {fetchCardById, fetchRandomCard };
+export { fetchCardById, fetchRandomCard };
