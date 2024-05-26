@@ -5,6 +5,8 @@ import {
   fetchRandomCardSuccess,
   fetchIdReq,
   fetchIdSuccess,
+  searchByNameReq,
+  searchByNameSuccess,
 } from "./scryfall_reducer";
 import { mainActions } from "./main_reducer";
 
@@ -50,19 +52,26 @@ const fetchCardById = (id: string) => {
   };
 };
 
-// function scryfall_search_by_name(nameSearchInput) {
-//   fetch(scryfall_url + "cards/search?q=" + nameSearchInput)
-//     .then((response) => response.json())
-//     .then((data) => {
-//       console.log(data);
-//       if (data.object === "list") {
-//         const d = data.data;
-//         console.log(d);
-//         // setSelectedCard(d[0]);
-//         // setPrice(getPrice(d[0]));
-//       }
-//     });
-// }
+const searchByName = (name: string) => {
+  return async (dispatch: Dispatch) => {
+    dispatch(searchByNameReq(name));
+    try {
+      const res = await fetch(
+        scryfall_url + "cards/search?q=" + name //+ "&order=edhrec&dir=desc"
+      );
+      if (!res.ok) {
+        throw new Error("Failed to fetch card by name");
+      }
+      const data = await res.json();
+      dispatch(searchByNameSuccess(data));
+      dispatch(mainActions.fillCardData({ [data.id]: data }));
+    } catch (err: any) {
+      dispatch(fetchFailed(err.message));
+    }
+  };
+};
+
+
 
 const fetchRandomCard = () => {
   return async (dispatch: Dispatch) => {
@@ -82,4 +91,4 @@ const fetchRandomCard = () => {
   };
 };
 
-export { fetchCardById, fetchRandomCard };
+export { fetchCardById, fetchRandomCard, searchByName };

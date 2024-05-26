@@ -5,12 +5,14 @@ interface ScryfallState {
   loading: boolean;
   card: any;
   error: string | null;
+  searchResults: [ScryfallCard] | null;
 }
 
 const initialState: ScryfallState = {
   loading: false,
   card: null,
   error: null,
+  searchResults: null,
 };
 
 const scryfallSlice = createSlice({
@@ -38,6 +40,17 @@ const scryfallSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
+    searchByNameReq(state, action: PayloadAction<string>) {
+      state.loading = true;
+      state.error = null;
+    },
+    searchByNameSuccess(state, action: PayloadAction<[ScryfallCard]>) {
+      state.loading = false;
+      state.searchResults = action.payload;
+    },
+    clearSearchResults(state) {
+      state.searchResults = null;
+    },
   },
 });
 
@@ -45,6 +58,10 @@ export const {
   fetchFailed,
   fetchRandomCardReq,
   fetchRandomCardSuccess,
-  fetchIdReq,fetchIdSuccess
+  fetchIdReq,
+  fetchIdSuccess,
+  searchByNameReq,
+  searchByNameSuccess,
+  clearSearchResults,
 } = scryfallSlice.actions;
 export default scryfallSlice.reducer;
