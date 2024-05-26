@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# rust tools
+/server/rust/target/
+/server/*.json
