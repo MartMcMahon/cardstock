@@ -1,44 +1,101 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
+import { debounce } from "lodash";
 import { useSelect } from "./hooks/useSelect";
 import CardMarketButtons from "./cardMarketButtons";
-import Networth from "./networth";
+import CardNameLink from "./cardNameLink";
 import Graph from "./graph";
+import Networth from "./networth";
+import SearchResultsListLink from "./searchResultsListLink";
 import { Dispatch } from "./store";
-
-import { fetchCardById, fetchRandomCard } from "./scryfall";
-import { mainActions } from "./main_reducer";
-
+import { fetchCardById, fetchRandomCard, searchByName } from "./scryfall";
+import { clearSearchResults } from "./scryfall_reducer";
+import { Card } from "./types/card";
 import "./dashboard.css";
 
 const Dashboard = () => {
-  const [cardNameInput, setCardNameInput] = useState("");
   const {
     cardPositions,
-    cardData,
     cash,
+    cardData,
     mouseCard,
     mousePos,
     selectedCard,
     simple_price,
   } = useSelect((state) => state.main);
+  const { searchResults } = useSelect((state) => state.scryfall);
   const dispatch = useDispatch<Dispatch>();
+  const [cardNameInput, setCardNameInput] = useState("");
+  const [searchResultsPos, setSearchResultsPos] = useState({ top: 0, left: 0 });
+  const [searchResultsChunk, setSearchResultsChunk] = useState([]);
+  const cardSearchRef = useRef<HTMLDivElement>(null);
 
   const logout = () => {
     dispatch({ type: "logout" });
   };
 
+  useEffect(() => {
+    const updatePositon = () => {
+      if (cardSearchRef && cardSearchRef.current) {
+        const rect = cardSearchRef.current.getBoundingClientRect();
+        setSearchResultsPos({
+          top: rect.bottom + window.scrollY,
+          left: rect.left + window.scrollX,
+        });
+      }
+    };
+    updatePositon();
+    window.addEventListener("resize", updatePositon);
+    return () => {
+      window.removeEventListener("resize", updatePositon);
+    };
+  }, [setSearchResultsPos]);
+
+  useEffect(() => {
+    if (searchResults) {
+      setSearchResultsChunk(searchResults.data.slice(0, 10));
+    }
+  }, [searchResults]);
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const debouncedNameSearch = debounce(() => {
+      dispatch(searchByName(e.target.value));
+    }, 150);
+
+    setCardNameInput(e.target.value);
+    debouncedNameSearch();
+  };
   return (
     <div className="main">
       <div className="header">
         Dashboard
         <div className="card-search">
-          <input
-            type="text"
-            onChange={(e) => setCardNameInput(e.target.value)}
-            placeholder="card name"
-            value={cardNameInput}
-          />
+          <div className="search-input" ref={cardSearchRef}>
+            <input
+              type="text"
+              onChange={handleSearch}
+              onFocus={handleSearch}
+              onBlur={() => {
+                console.log("blur");
+                dispatch(clearSearchResults());
+              }}
+              placeholder="card name"
+              value={cardNameInput}
+            />
+            {cardSearchRef && cardSearchRef.current && searchResults && (
+              <div
+                style={{
+                  position: "absolute",
+                  zIndex: 10,
+                  ...searchResultsPos,
+                }}
+              >
+                {searchResultsChunk.map((c: Card) => {
+                  return <SearchResultsListLink card={c} />;
+                })}
+              </div>
+            )}
+          </div>
           <button onClick={() => console.log("search")}>search</button>
           <button
             onClick={() => {
@@ -59,45 +116,27 @@ const Dashboard = () => {
           </div>
           Cash : ${cash.toFixed(2)}
           <div>
-            <div className="portfolioCardList">Your Cards</div>
-            {Object.entries(cardPositions as { [key: string]: number }).map(
-              ([id, amount]: [string, number]) => {
-                let card;
-                if (id in cardData) {
-                  card = cardData[id];
-                } else {
-                  dispatch(fetchCardById(id));
-                  card = cardData[id];
-                  console.log("card", card);
-                }
-                if (!card) {
-                  return <div className="portfolioCardEntry"> ??error??</div>;
-                }
+            <div className="portfolioCardList">
+              Your Cards
+              {Object.entries(cardPositions as { [key: string]: number }).map(
+                ([id, amount]: [string, number]) => {
+                  let card: Card;
+                  if (id in cardData) {
+                    card = cardData[id];
+                  } else {
+                    dispatch(fetchCardById(id));
+                    card = cardData[id];
+                  }
 
-                return (
-                  <div
-                    className="portfolioCardEntry"
-                    key={id}
-                    onClick={() => {
-                      dispatch(mainActions.selectCard(card));
-                    }}
-                    onMouseMove={(e) => {
-                      dispatch(
-                        mainActions.mouseCard({
-                          card,
-                          pos: [e.clientX, e.clientY],
-                        })
-                      );
-                    }}
-                    onMouseLeave={() => {
-                      dispatch(mainActions.mouseLeaveCard(card));
-                    }}
-                  >
-                    {card.name} {amount !== 0 && `: ${amount}`}
-                  </div>
-                );
-              }
-            )}
+                  return (
+                    <div className="portfolioCardEntry">
+                      <CardNameLink card={card} highlight={false} />
+                      <div>{amount !== 0 && `: ${amount}`}</div>
+                    </div>
+                  );
+                }
+              )}
+            </div>
           </div>
         </div>
         <div className="center">
@@ -135,6 +174,7 @@ const Dashboard = () => {
           left: mousePos[0],
           top: mousePos[1],
           pointerEvents: "none",
+          zIndex: 50,
         }}
       >
         {mouseCard && mouseCard.image_uris && (

@@ -1,9 +1,8 @@
-import React, { useEffect } from "react";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { useSelect } from "./hooks/useSelect";
 
 const Graph = () => {
-  const { selectedCard } = useSelect((state) => state);
+  const { searchResults } = useSelect((state) => state.scryfall);
 
   return (
     <LineChart
@@ -15,6 +14,7 @@ const Graph = () => {
       ]}
       width={400}
       height={350}
+      sx={{ pointerEvents: searchResults ? "none" : "auto" }}
     />
   );
 };
