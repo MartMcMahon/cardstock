@@ -25,4 +25,4 @@ dist-ssr
 
 # rust tools
 /server/rust/target/
-/server/*.json
+/server/rust/*.json

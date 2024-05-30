@@ -4,7 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-redis = { version = "0.25.3", features = ["aio", "tokio-comp"] }
+anyhow = "1.0.86"
+chrono = "0.4.38"
 serde = { version = "1.0.203", features = ["derive"] }
 serde_json = "1.0.117"
 tokio = { version = "1.37.0", features = ["full"] }
+tokio-postgres = { version = "0.7.10", features = ["with-chrono-0_4"] }

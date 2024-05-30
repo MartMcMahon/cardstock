@@ -1,72 +1,148 @@
-use redis::AsyncCommands;
-use serde::Deserialize;
-use serde_json::Value;
-use std::fs::File;
-use std::io::{self, BufReader};
-use tokio::runtime::Runtime;
+use anyhow::Result;
+use serde::{Deserialize, Serialize};
+use tokio::fs::File;
+use tokio::io::AsyncReadExt;
+use tokio_postgres::NoTls;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize, Debug)]
+pub struct AllPrices {
+    pub meta: serde_json::Value,
+    pub data: serde_json::Value,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
 pub struct PriceFormats {
     pub mtgo: Option<Record<PriceList>>,
     pub paper: Option<PaperPriceList>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Record<T> {
     pub cardhoarder: Option<T>,
 }
 
-#[derive(Deserialize)]
-pub struct PaperPriceList {
-    pub cardkingdom: Option<PriceList>,
-    pub cardmarket: Option<PriceList>,
-    pub cardsphere: Option<PriceList>,
-    pub tcgplayer: Option<PriceList>,
-}
-
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct PriceList {
     pub buylist: Option<PricePoints>,
     pub currency: String,
     pub retail: Option<PricePoints>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct PricePoints {
     pub foil: Option<std::collections::HashMap<String, f64>>,
     pub normal: Option<std::collections::HashMap<String, f64>>,
 }
 
-async fn load_json_to_redis(file_path: &str, redis_url: &str) -> redis::RedisResult<()> {
-    let client = redis::Client::open(redis_url)?;
-    let mut con = client.get_async_connection().await?;
-    println!("Connected to Redis");
+#[derive(Deserialize, Serialize, Debug)]
+pub struct PaperPriceList {
+    pub cardkingdom: Option<PriceList>,
+    pub cardmarket: Option<PriceList>,
+    pub cardsphere: Option<PriceList>,
+    pub tcgplayer: Option<PriceList>,
+}
+impl PaperPriceList {
+    pub fn price_list(&self) -> Option<&PriceList> {
+        if let Some(ref price_list) = self.cardkingdom {
+            return Some(price_list);
+        } else if let Some(ref price_list) = self.tcgplayer {
+            return Some(price_list);
+        } else if let Some(ref price_list) = self.cardmarket {
+            return Some(price_list);
+        } else if let Some(ref price_list) = self.cardsphere {
+            return Some(price_list);
+        }
+        None
+    }
+}
 
-    let file = File::open(file_path)?;
-    let reader = BufReader::new(file);
-    println!("Opened JSON file");
-    println!("Reading JSON file..");
-    let json_data: Value = serde_json::from_reader(reader).unwrap();
-    println!("Read JSON file");
+async fn read_json(file_path: &str) -> serde_json::Result<AllPrices> {
+    let mut file = File::open(file_path).await.unwrap();
+    let mut contents = String::new();
+    file.read_to_string(&mut contents).await.unwrap();
+    let data: AllPrices = serde_json::from_str(&contents)?;
+    Ok(data)
+}
 
-    // Process and insert data into Redis
-    match json_data {
-        Value::Object(map) => {
-            for (key, value) in map {
-                let key = key.as_str();
-                let value = serde_json::to_string(&value).unwrap();
-                con.set(key, value).await?;
+#[tokio::main]
+async fn main() -> Result<()> {
+    println!("loading data from AllPrices.json");
+    let file_path = "AllPrices.json";
+    let all_prices = read_json(file_path).await?;
+    let data = all_prices.data;
+    let obj = data.as_object().unwrap();
+    println!("key count: {}", obj.keys().len());
+
+    let client = init_tables().await?;
+
+    for (mtg_json_id, value) in obj {
+        println!("key: {}", mtg_json_id);
+        let price_formats: PriceFormats = serde_json::from_value(value.clone())?;
+        if price_formats.paper.is_none() {
+            continue;
+        }
+        let paper = price_formats.paper.unwrap();
+        // TODO: only care about cardkingdom + normal for now
+        if paper.cardkingdom.is_none() {
+            continue;
+        }
+        let cardkingdom = paper.cardkingdom.unwrap();
+        if cardkingdom.retail.is_none() {
+            continue;
+        }
+        let retail = cardkingdom.retail.unwrap();
+        if retail.normal.is_none() {
+            continue;
+        }
+        let normal = retail.normal.unwrap();
+        // let _foil = retail.foil.unwrap();
+
+        println!("normal");
+        for (date_string, price) in normal {
+            let date = chrono::NaiveDate::parse_from_str(&date_string, "%Y-%m-%d")?;
+            let datetime = date.and_hms_opt(0, 0, 0).unwrap();
+            let res = client
+                .execute(
+                    "INSERT INTO price_history (mtg_json_id, timestamp, price) VALUES ($1, $2, $3)",
+                    &[&mtg_json_id, &datetime, &price],
+                )
+                .await;
+            match res {
+                Ok(_) => print!("inserted"),
+                Err(e) => println!("error: {}", e),
             }
         }
-        _ => println!("Expected JSON object at root"),
     }
 
     Ok(())
 }
 
-fn main() -> io::Result<()> {
-    let rt = Runtime::new().unwrap();
-    rt.block_on(load_json_to_redis("AllPrices.json", "redis://127.0.0.1/"))
-        .unwrap();
-    Ok(())
+async fn init_tables() -> Result<tokio_postgres::Client> {
+    let (client, connection) = tokio_postgres::connect(
+        "host=localhost user=postgres password=postgres dbname=cardstock",
+        NoTls,
+    )
+    .await?;
+
+    // Spawn the connection to run in the background
+    tokio::spawn(async move {
+        if let Err(e) = connection.await {
+            eprintln!("connection error: {}", e);
+        }
+    });
+
+    client
+        .batch_execute(
+            "CREATE TABLE IF NOT EXISTS price_history (
+                    id SERIAL PRIMARY KEY,
+                    mtg_json_id TEXT NOT NULL,
+                    timestamp TIMESTAMP NOT NULL,
+                    price DOUBLE PRECISION NOT NULL,
+                    CONSTRAINT unique_card_date UNIQUE (mtg_json_id, timestamp));
+
+                    CREATE INDEX IF NOT EXISTS idx_mtg_json_id_timestamp ON price_history (mtg_json_id, timestamp);",
+        )
+        .await?;
+
+    return Ok(client);
 }
