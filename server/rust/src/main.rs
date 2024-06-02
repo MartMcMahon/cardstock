@@ -1,4 +1,5 @@
 use anyhow::Result;
+use dotenv::dotenv;
 use serde::{Deserialize, Serialize};
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
@@ -55,6 +56,23 @@ impl PaperPriceList {
         None
     }
 }
+#[derive(Deserialize, Serialize, Debug)]
+enum Source {
+    CardKingdom,
+    CardMarket,
+    CardSphere,
+    TCGPlayer,
+}
+impl Source {
+    pub fn to_string(&self) -> String {
+        match self {
+            Source::CardKingdom => "cardkingdom".to_string(),
+            Source::CardMarket => "cardmarket".to_string(),
+            Source::CardSphere => "cardsphere".to_string(),
+            Source::TCGPlayer => "tcgplayer".to_string(),
+        }
+    }
+}
 
 async fn read_json(file_path: &str) -> serde_json::Result<AllPrices> {
     let mut file = File::open(file_path).await.unwrap();
@@ -66,6 +84,12 @@ async fn read_json(file_path: &str) -> serde_json::Result<AllPrices> {
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    dotenv().ok();
+
+    let db_user = std::env::var("DB_USER").expect("DB_USER must be set. Check your .env file");
+    let db_password =
+        std::env::var("DB_PASSWORD").expect("DB_PASSWORD must be set. Check your .env file");
+
     println!("loading data from AllPrices.json");
     let file_path = "AllPrices.json";
     let all_prices = read_json(file_path).await?;
@@ -73,7 +97,7 @@ async fn main() -> Result<()> {
     let obj = data.as_object().unwrap();
     println!("key count: {}", obj.keys().len());
 
-    let client = init_tables().await?;
+    let client = init_tables(db_user, db_password).await?;
 
     for (mtg_json_id, value) in obj {
         println!("key: {}", mtg_json_id);
@@ -86,6 +110,7 @@ async fn main() -> Result<()> {
         if paper.cardkingdom.is_none() {
             continue;
         }
+        let source = Source::CardKingdom;
         let cardkingdom = paper.cardkingdom.unwrap();
         if cardkingdom.retail.is_none() {
             continue;
@@ -103,8 +128,9 @@ async fn main() -> Result<()> {
             let datetime = date.and_hms_opt(0, 0, 0).unwrap();
             let res = client
                 .execute(
-                    "INSERT INTO price_history (mtg_json_id, timestamp, price) VALUES ($1, $2, $3)",
-                    &[&mtg_json_id, &datetime, &price],
+                    "INSERT INTO price_history (mtg_json_id, timestamp, price, source) VALUES ($1, $2, $3, $4)
+                     ON CONFLICT (unique_card_date) DO NOTHING",
+                     &[&mtg_json_id, &datetime, &price, &source.to_string()],
                 )
                 .await;
             match res {
@@ -117,9 +143,13 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-async fn init_tables() -> Result<tokio_postgres::Client> {
+async fn init_tables(db_user: String, db_password: String) -> Result<tokio_postgres::Client> {
     let (client, connection) = tokio_postgres::connect(
-        "host=localhost user=postgres password=postgres dbname=cardstock",
+        format!(
+            "host=localhost user={} password={} dbname=cardstock",
+            db_user, db_password
+        )
+        .as_str(),
         NoTls,
     )
     .await?;
