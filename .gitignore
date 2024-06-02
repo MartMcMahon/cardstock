@@ -26,3 +26,6 @@ dist-ssr
 # rust tools
 /server/rust/target/
 /server/rust/*.json
+
+# secrets
+.env*

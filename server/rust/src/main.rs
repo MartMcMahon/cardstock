@@ -100,8 +100,8 @@ async fn main() -> Result<()> {
 
     let client = init_tables(db_host, db_user, db_password).await?;
 
-    for (mtg_json_id, value) in obj {
-        println!("key: {}", mtg_json_id);
+    for (uuid, value) in obj {
+        println!("key: {}", uuid);
         let price_formats: PriceFormats = serde_json::from_value(value.clone())?;
         if price_formats.paper.is_none() {
             continue;
@@ -129,9 +129,9 @@ async fn main() -> Result<()> {
             let datetime = date.and_hms_opt(0, 0, 0).unwrap();
             let res = client
                 .execute(
-                    "INSERT INTO price_history (mtg_json_id, timestamp, price, source) VALUES ($1, $2, $3, $4)
+                    "INSERT INTO price_history (uuid, timestamp, price, source) VALUES ($1, $2, $3, $4)
                      ON CONFLICT (unique_card_date) DO NOTHING",
-                     &[&mtg_json_id, &datetime, &price, &source.to_string()],
+                     &[&uuid, &datetime, &price, &source.to_string()],
                 )
                 .await;
             match res {
@@ -170,12 +170,12 @@ async fn init_tables(
         .batch_execute(
             "CREATE TABLE IF NOT EXISTS price_history (
                     id SERIAL PRIMARY KEY,
-                    mtg_json_id TEXT NOT NULL,
+                    uuid TEXT NOT NULL,
                     timestamp TIMESTAMP NOT NULL,
                     price DOUBLE PRECISION NOT NULL,
-                    CONSTRAINT unique_card_date UNIQUE (mtg_json_id, timestamp, source));
+                    CONSTRAINT unique_card_date UNIQUE (uuid, timestamp, source));
 
-                    CREATE INDEX IF NOT EXISTS idx_mtg_json_id_timestamp ON price_history (mtg_json_id, timestamp, source);",
+                    CREATE INDEX IF NOT EXISTS idx_uuid_timestamp ON price_history (uuid, timestamp, source);",
         )
         .await?;
 
