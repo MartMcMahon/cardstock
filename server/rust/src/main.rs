@@ -86,6 +86,7 @@ async fn read_json(file_path: &str) -> serde_json::Result<AllPrices> {
 async fn main() -> Result<()> {
     dotenv().ok();
 
+    let db_host = std::env::var("DB_HOST").expect("DB_HOST must be set. Check your .env file");
     let db_user = std::env::var("DB_USER").expect("DB_USER must be set. Check your .env file");
     let db_password =
         std::env::var("DB_PASSWORD").expect("DB_PASSWORD must be set. Check your .env file");
@@ -97,7 +98,7 @@ async fn main() -> Result<()> {
     let obj = data.as_object().unwrap();
     println!("key count: {}", obj.keys().len());
 
-    let client = init_tables(db_user, db_password).await?;
+    let client = init_tables(db_host, db_user, db_password).await?;
 
     for (mtg_json_id, value) in obj {
         println!("key: {}", mtg_json_id);
@@ -143,11 +144,15 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-async fn init_tables(db_user: String, db_password: String) -> Result<tokio_postgres::Client> {
+async fn init_tables(
+    db_host: String,
+    db_user: String,
+    db_password: String,
+) -> Result<tokio_postgres::Client> {
     let (client, connection) = tokio_postgres::connect(
         format!(
-            "host=localhost user={} password={} dbname=cardstock",
-            db_user, db_password
+            "host={} user={} password={} dbname=cardstock",
+            db_host, db_user, db_password
         )
         .as_str(),
         NoTls,
@@ -168,9 +173,9 @@ async fn init_tables(db_user: String, db_password: String) -> Result<tokio_postg
                     mtg_json_id TEXT NOT NULL,
                     timestamp TIMESTAMP NOT NULL,
                     price DOUBLE PRECISION NOT NULL,
-                    CONSTRAINT unique_card_date UNIQUE (mtg_json_id, timestamp));
+                    CONSTRAINT unique_card_date UNIQUE (mtg_json_id, timestamp, source));
 
-                    CREATE INDEX IF NOT EXISTS idx_mtg_json_id_timestamp ON price_history (mtg_json_id, timestamp);",
+                    CREATE INDEX IF NOT EXISTS idx_mtg_json_id_timestamp ON price_history (mtg_json_id, timestamp, source);",
         )
         .await?;
 
