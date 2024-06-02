@@ -1,27 +1,13 @@
 import { useDispatch } from "react-redux";
+import { debounce } from "lodash";
 import { Dispatch } from "./store";
 import { mainActions } from "./main_reducer";
 import { clearSearchResults } from "./scryfall_reducer";
 import { Card } from "./types/card";
 import "./cardNameLink.css";
-import { debounce } from "lodash";
 
-const CardNameLink = ({ card }: { card: Card; highlight: boolean }) => {
-  // const { cardData } = useSelect((state) => state.main);
+const CardNameLink = ({ card, isSearchResults }: { card: Card; isSearchResults: boolean }) => {
   const dispatch = useDispatch<Dispatch>();
-  // const [card, setCard] = useState<Card | null>(null);
-
-  // useEffect(() => {
-  //   let card;
-  //   if (id in cardData) {
-  //     card = cardData[id];
-  //     setCard(card);
-  //   } else {
-  //     card = cardData[id];
-  //     dispatch(mainActions.fillCardData({ card }));
-  //     setCard(card);
-  //   }
-  // }, [id, cardData, dispatch]);
 
   if (!card) {
     return <div>...</div>;
@@ -46,11 +32,15 @@ const CardNameLink = ({ card }: { card: Card; highlight: boolean }) => {
 
   return (
     <div
-      className={"card-name-link"}
+      className={
+        "card-name-link " + (isSearchResults ? "search-results-list-link" : "")
+      }
       key={card.id}
-      onClick={() => {
+      onMouseDown={() => {
+        // must be onMouseDown not onClick to prevent blur from firing before click
         dispatch(mainActions.selectCard(card));
         dispatch(clearSearchResults());
+        dispatch(mainActions.mouseLeaveCard(card));
       }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}

@@ -39,6 +39,7 @@ interface MainState {
   user_id: string;
   simple_price: number;
   selectedCard: Card | null;
+  // selectedCardIsLoading: boolean;
 }
 
 let cash = parseFloat(localStorage.getItem("cash") || "2000.0");
@@ -71,8 +72,10 @@ const initialState: MainState = {
   user_id: "test",
   simple_price: 0,
   selectedCard: null,
+  // selectedCardIsLoading: false,
 };
 
+// TODO rename main to ui
 const mainSlice = createSlice({
   name: "main",
   initialState,
@@ -81,7 +84,10 @@ const mainSlice = createSlice({
       state.selectedCard = action.payload;
       state.simple_price = getPrice(action.payload);
     },
-    mouseCard(state, action: PayloadAction<{card: Card, pos: [number, number]}>) {
+    mouseCard(
+      state,
+      action: PayloadAction<{ card: Card; pos: [number, number] }>
+    ) {
       state.mouseCard = action.payload.card;
       state.mousePrice = getPrice(action.payload.card);
       state.mousePos = action.payload.pos;

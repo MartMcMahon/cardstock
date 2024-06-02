@@ -2,14 +2,14 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import ScryfallCard from "./types/scryfallCard";
 
 interface ScryfallState {
-  loading: boolean;
+  isLoading: boolean;
   card: any;
   error: string | null;
   searchResults: [ScryfallCard] | null;
 }
 
 const initialState: ScryfallState = {
-  loading: false,
+  isLoading: false,
   card: null,
   error: null,
   searchResults: null,
@@ -20,32 +20,32 @@ const scryfallSlice = createSlice({
   initialState,
   reducers: {
     fetchRandomCardReq(state) {
-      state.loading = true;
+      state.isLoading = true;
       state.error = null;
     },
     fetchRandomCardSuccess(state, action: PayloadAction<ScryfallCard>) {
       console.log("random card success");
-      state.loading = false;
+      state.isLoading = false;
       state.card = action.payload;
     },
     fetchIdReq(state) {
-      state.loading = true;
+      state.isLoading = true;
       state.error = null;
     },
     fetchIdSuccess(state, action: PayloadAction<ScryfallCard>) {
-      state.loading = false;
+      state.isLoading = false;
       state.card = action.payload;
     },
     fetchFailed(state, action: PayloadAction<string>) {
-      state.loading = false;
+      state.isLoading = false;
       state.error = action.payload;
     },
-    searchByNameReq(state, action: PayloadAction<string>) {
-      state.loading = true;
+    searchByNameReq(state, _action: PayloadAction<string>) {
+      state.isLoading = true;
       state.error = null;
     },
     searchByNameSuccess(state, action: PayloadAction<[ScryfallCard]>) {
-      state.loading = false;
+      state.isLoading = false;
       state.searchResults = action.payload;
     },
     clearSearchResults(state) {

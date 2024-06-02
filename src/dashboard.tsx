@@ -6,7 +6,6 @@ import CardMarketButtons from "./cardMarketButtons";
 import CardNameLink from "./cardNameLink";
 import Graph from "./graph";
 import Networth from "./networth";
-import SearchResultsListLink from "./searchResultsListLink";
 import { Dispatch } from "./store";
 import { fetchCardById, fetchRandomCard, searchByName } from "./scryfall";
 import { clearSearchResults } from "./scryfall_reducer";
@@ -21,9 +20,10 @@ const Dashboard = () => {
     mouseCard,
     mousePos,
     selectedCard,
+    selectedCardIsLoading,
     simple_price,
   } = useSelect((state) => state.main);
-  const { searchResults } = useSelect((state) => state.scryfall);
+  const { isLoading, searchResults } = useSelect((state) => state.scryfall);
   const dispatch = useDispatch<Dispatch>();
   const [cardNameInput, setCardNameInput] = useState("");
   const [searchResultsPos, setSearchResultsPos] = useState({ top: 0, left: 0 });
@@ -65,6 +65,22 @@ const Dashboard = () => {
     setCardNameInput(e.target.value);
     debouncedNameSearch();
   };
+
+  const cardImg = () => {
+    if (isLoading) {
+      return <div>loading...</div>;
+    }
+    if (selectedCard && selectedCard.image_uris) {
+      return (
+        <img
+          src={selectedCard.image_uris.normal}
+          alt={selectedCard.name}
+          width={"300px"}
+        />
+      );
+    }
+  };
+
   return (
     <div className="main">
       <div className="header">
@@ -75,8 +91,7 @@ const Dashboard = () => {
               type="text"
               onChange={handleSearch}
               onFocus={handleSearch}
-              onBlur={() => {
-                console.log("blur");
+              onBlur={(e) => {
                 dispatch(clearSearchResults());
               }}
               placeholder="card name"
@@ -91,7 +106,7 @@ const Dashboard = () => {
                 }}
               >
                 {searchResultsChunk.map((c: Card) => {
-                  return <SearchResultsListLink card={c} />;
+                  return <CardNameLink card={c} isSearchResults={true} />;
                 })}
               </div>
             )}
@@ -130,7 +145,7 @@ const Dashboard = () => {
 
                   return (
                     <div className="portfolioCardEntry">
-                      <CardNameLink card={card} highlight={false} />
+                      <CardNameLink card={card} isSearchResults={false} />
                       <div>{amount !== 0 && `: ${amount}`}</div>
                     </div>
                   );
@@ -157,15 +172,7 @@ const Dashboard = () => {
           )}
         </div>
         <div className="right">
-          <div className="card-display">
-            {selectedCard && selectedCard.image_uris && (
-              <img
-                src={selectedCard.image_uris.normal}
-                alt={selectedCard.name}
-                width={"300px"}
-              />
-            )}
-          </div>
+          <div className="card-display">{cardImg()}</div>
         </div>
       </div>
       <div
