@@ -1,6 +1,8 @@
 use anyhow::Result;
+use csv::Writer;
 use dotenv::dotenv;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
 use tokio_postgres::NoTls;
@@ -82,6 +84,65 @@ async fn read_json(file_path: &str) -> serde_json::Result<AllPrices> {
     Ok(data)
 }
 
+fn get_price_list(val: &serde_json::Value) -> Option<HashMap<String, f64>> {
+    let price_formats: PriceFormats = serde_json::from_value(val.clone()).unwrap();
+    if price_formats.paper.is_none() {
+        return None;
+    }
+    let paper = price_formats.paper.unwrap();
+    // TODO: only care about cardkingdom + normal for now
+    if paper.cardkingdom.is_none() {
+        return None;
+    }
+    let source = Source::CardKingdom;
+    let cardkingdom = paper.cardkingdom.unwrap();
+    if cardkingdom.retail.is_none() {
+        return None;
+    }
+    let retail = cardkingdom.retail.unwrap();
+    if retail.normal.is_none() {
+        return None;
+    }
+    let normal = retail.normal.unwrap();
+
+    Some(normal)
+}
+
+async fn convert_price_history(prices: serde_json::Value) -> Result<()> {
+    let obj = prices.as_object().unwrap();
+    println!("key count: {}", obj.keys().len());
+
+    // Open the output CSV file
+    let output_path = "price_history.csv";
+    let output_file = std::fs::File::create(output_path)?;
+    let mut writer = Writer::from_writer(output_file);
+
+    for (uuid, value) in obj {
+        println!("key: {}", uuid);
+        let price_list = get_price_list(value);
+
+        let _price_list = match price_list {
+            Some(price_list) => {
+                for (date_string, price) in price_list {
+                    let date = chrono::NaiveDate::parse_from_str(&date_string, "%Y-%m-%d")?;
+                    let datetime = date.and_hms_opt(0, 0, 0).unwrap();
+                    let datetime_str = datetime.to_string();
+                    let price_str = price.to_string();
+                    let record = vec![uuid, &datetime_str, &price_str, "cardkingdom"];
+                    let _ = writer.write_record(record);
+                }
+            }
+            None => {
+                continue;
+            }
+        };
+    }
+
+    let _ = writer.flush();
+
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     dotenv().ok();
@@ -91,60 +152,66 @@ async fn main() -> Result<()> {
     let db_password =
         std::env::var("DB_PASSWORD").expect("DB_PASSWORD must be set. Check your .env file");
 
+    println!("establishing connnection to {}", db_host);
+    let client = client(db_host, db_user, db_password).await?;
+    let _ph_table_res = init_price_history_table(&client).await?;
+
     println!("loading data from AllPrices.json");
     let file_path = "AllPrices.json";
     let all_prices = read_json(file_path).await?;
     let data = all_prices.data;
-    let obj = data.as_object().unwrap();
-    println!("key count: {}", obj.keys().len());
 
-    let client = init_tables(db_host, db_user, db_password).await?;
+    let _ = convert_price_history(data).await;
 
-    for (uuid, value) in obj {
-        println!("key: {}", uuid);
-        let price_formats: PriceFormats = serde_json::from_value(value.clone())?;
-        if price_formats.paper.is_none() {
-            continue;
-        }
-        let paper = price_formats.paper.unwrap();
-        // TODO: only care about cardkingdom + normal for now
-        if paper.cardkingdom.is_none() {
-            continue;
-        }
-        let source = Source::CardKingdom;
-        let cardkingdom = paper.cardkingdom.unwrap();
-        if cardkingdom.retail.is_none() {
-            continue;
-        }
-        let retail = cardkingdom.retail.unwrap();
-        if retail.normal.is_none() {
-            continue;
-        }
-        let normal = retail.normal.unwrap();
-        // let _foil = retail.foil.unwrap();
+    // println!("key count: {}", obj.keys().len());
 
-        println!("normal");
-        for (date_string, price) in normal {
-            let date = chrono::NaiveDate::parse_from_str(&date_string, "%Y-%m-%d")?;
-            let datetime = date.and_hms_opt(0, 0, 0).unwrap();
-            let res = client
-                .execute(
-                    "INSERT INTO price_history (uuid, timestamp, price, source) VALUES ($1, $2, $3, $4)
-                     ON CONFLICT (unique_card_date) DO NOTHING",
-                     &[&uuid, &datetime, &price, &source.to_string()],
-                )
-                .await;
-            match res {
-                Ok(_) => print!("inserted"),
-                Err(e) => println!("error: {}", e),
-            }
-        }
-    }
+    return Ok(());
+
+    // for (uuid, value) in obj {
+    //     println!("key: {}", uuid);
+    //     let price_formats: PriceFormats = serde_json::from_value(value.clone())?;
+    //     if price_formats.paper.is_none() {
+    //         continue;
+    //     }
+    //     let paper = price_formats.paper.unwrap();
+    //     // TODO: only care about cardkingdom + normal for now
+    //     if paper.cardkingdom.is_none() {
+    //         continue;
+    //     }
+    //     let source = Source::CardKingdom;
+    //     let cardkingdom = paper.cardkingdom.unwrap();
+    //     if cardkingdom.retail.is_none() {
+    //         continue;
+    //     }
+    //     let retail = cardkingdom.retail.unwrap();
+    //     if retail.normal.is_none() {
+    //         continue;
+    //     }
+    //     let normal = retail.normal.unwrap();
+    //     // let _foil = retail.foil.unwrap();
+
+    //     println!("normal");
+    //     for (date_string, price) in normal {
+    //         let date = chrono::NaiveDate::parse_from_str(&date_string, "%Y-%m-%d")?;
+    //         let datetime = date.and_hms_opt(0, 0, 0).unwrap();
+    //         let res = client
+    //             .execute(
+    //                 "INSERT INTO price_history (uuid, timestamp, price, source) VALUES ($1, $2, $3, $4)
+    //                  ON CONFLICT DO NOTHING",
+    //                  &[&uuid, &datetime, &price, &source.to_string()],
+    //             )
+    //             .await;
+    //         match res {
+    //             Ok(_) => print!("inserted"),
+    //             Err(e) => println!("error: {}", e),
+    //         }
+    //     }
+    // }
 
     Ok(())
 }
 
-async fn init_tables(
+async fn client(
     db_host: String,
     db_user: String,
     db_password: String,
@@ -159,12 +226,18 @@ async fn init_tables(
     )
     .await?;
 
-    // Spawn the connection to run in the background
     tokio::spawn(async move {
         if let Err(e) = connection.await {
             eprintln!("connection error: {}", e);
         }
     });
+    Ok(client)
+}
+
+async fn init_price_history_table(
+    client: &tokio_postgres::Client,
+) -> Result<&tokio_postgres::Client> {
+    // Spawn the connection to run in the background
 
     client
         .batch_execute(
@@ -173,6 +246,7 @@ async fn init_tables(
                     uuid TEXT NOT NULL,
                     timestamp TIMESTAMP NOT NULL,
                     price DOUBLE PRECISION NOT NULL,
+                    source TEXT NOT NULL,
                     CONSTRAINT unique_card_date UNIQUE (uuid, timestamp, source));
 
                     CREATE INDEX IF NOT EXISTS idx_uuid_timestamp ON price_history (uuid, timestamp, source);",
