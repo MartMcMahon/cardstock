@@ -1,6 +1,6 @@
 import { useDispatch } from "react-redux";
 import { useSelect } from "./hooks/useSelect";
-import { mainActions } from "./main_reducer";
+import { buyCard, sellCard } from "./main_reducer";
 import "./cardMarketButtons.css";
 
 const CardMarketButtons = () => {
@@ -13,7 +13,7 @@ const CardMarketButtons = () => {
         className="card-market-button"
         onClick={() => {
           dispatch(
-            mainActions.buyCard({
+            buyCard({
               card: selectedCard,
               amount: 1,
               id: selectedCard.id,
@@ -27,7 +27,7 @@ const CardMarketButtons = () => {
         className="card-market-button"
         onClick={() => {
           dispatch(
-            mainActions.sellCard({
+            sellCard({
               card: selectedCard,
               amount: 1,
               id: selectedCard.id,

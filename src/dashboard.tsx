@@ -155,18 +155,20 @@ const Dashboard = () => {
           </div>
         </div>
         <div className="center">
-          <div className="graph-container">
-            <Graph />
-          </div>
           {selectedCard && (
             <>
-              <div className="price-and-buttons">
+              <div className="name">
                 <h2>{selectedCard.name}</h2>
-                <div className="price">
-                  <h3>{simple_price}</h3>
-                  <CardMarketButtons />
-                  You have {cardPositions[selectedCard.id] || 0} of this card
-                </div>
+              </div>
+              <div className="graph-container">
+                <Graph />
+              </div>
+              <div className="price">
+                <h3>{simple_price}</h3>
+              </div>
+              <CardMarketButtons />
+              <div className="quantity-text">
+                You have {cardPositions[selectedCard.id] || 0} of this card
               </div>
             </>
           )}

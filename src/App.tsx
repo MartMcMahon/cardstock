@@ -1,25 +1,22 @@
-import { useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useEffect, useState } from "react";
 import { Outlet } from "react-router";
-import { Dispatch } from "./store";
-import { useSelect } from "./hooks/useSelect";
+import { useAuth } from "./hooks/useAuth";
 import "./App.css";
 
 function App() {
-  const { token } = useSelect((state) => state.api);
-  const dispatch = useDispatch<Dispatch>();
+  const { currentUser } = useAuth();
+  const [_userData, setUserData] = useState<any>(null); // State to hold user data
+  const [_loading, setLoading] = useState(true); // State to handle loading state
 
   useEffect(() => {
-    if (token) {
-      return;
-    }
-    if (localStorage.getItem("token")) {
-      const token = localStorage.getItem("token");
-      dispatch({ type: "loginWithToken", payload: token });
-    } else {
-      window.location.href = "/login";
-    }
-  }, [dispatch, token]);
+    const fetchUserData = async () => {
+      if (!currentUser) {
+        window.location.href = "/login";
+      }
+      setLoading(false);
+    };
+    fetchUserData();
+  }, [currentUser]);
 
   return <Outlet />;
 }

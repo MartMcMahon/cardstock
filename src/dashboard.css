@@ -71,28 +71,28 @@ button {
 .center {
   display: flex;
   flex: 1;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: center;
+
+  .name {
+    display: flex;
+    justify-content: center;
+  }
 
   .graph-container {
     display: flex;
     flex: 1;
     justify-content: center;
   }
-  .price-and-buttons {
+
+  .price {
     display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    justify-content: center;
+  }
 
-    .price {
-      display: flex;
-      flex-direction: column;
-      text-align: right;
-
-      h3 {
-        margin: 12px;
-      }
-    }
+  .quantity-text {
+    display: flex;
+    justify-content: center;
   }
 }
 
@@ -100,10 +100,30 @@ button {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  min-width: 308px;
 
   .card-display {
     display: flex;
     flex: 1;
     flex-direction: row;
+
+    img {
+      display: flex;
+      margin: 0 10px;
+      max-height: 400px;
+      width: auto;
+    }
   }
+}
+
+@media (max-width: 1028px) {
+  .right {
+    min-width: 127px;
+
+    .card-display img {
+      max-height: 150px;
+      width: auto;
+    }
+  }
+
 }

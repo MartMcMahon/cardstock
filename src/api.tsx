@@ -4,7 +4,6 @@ import {
   fetchPriceHistoryReq,
   fetchPriceHistorySuccess,
 } from "./api_reducer";
-import { mainActions } from "./main_reducer";
 
 const fetchPriceHistory = (id: string) => {
   return async (dispatch: Dispatch) => {

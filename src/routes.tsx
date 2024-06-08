@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
 import Dashboard from "./dashboard";
+import Login from "./login";
 // import Portfolio from "./components/portfolio";
 // import Cards from "./components/cards";
 // import Card from "./components/card";
@@ -35,7 +36,7 @@ const routes = createBrowserRouter([
       //   },
     ],
   },
-  // { path: "/login", element: <Login /> },
+  { path: "/login", element: <Login /> },
 ]);
 
 export default routes;

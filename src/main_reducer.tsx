@@ -133,5 +133,12 @@ const mainSlice = createSlice({
   },
 });
 
-export const mainActions = mainSlice.actions;
+export const {
+  selectCard,
+  mouseCard,
+  mouseLeaveCard,
+  buyCard,
+  sellCard,
+  fillCardData,
+} = mainSlice.actions;
 export default mainSlice.reducer;

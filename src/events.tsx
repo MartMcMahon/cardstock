@@ -4,11 +4,12 @@ import {
   fetchPriceHistoryReq,
   fetchPriceHistorySuccess,
 } from "./api_reducer";
-import { mainActions } from "./main_reducer";
+import { selectCard } from "./main_reducer";
 
-const selectCard = (id: string) => {
+const setCardDisplay = (id: string) => {
   return async (dispatch: Dispatch) => {
-    dispatch(mainActions.selectCard(id));
+    dispatch(uuidToScryfall(id));
+    dispatch(selectCard(id));
     dispatch(fetchPriceHistory(id));
   };
-}
+};
