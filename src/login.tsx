@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 import { useAuth } from "./hooks/useAuth";
 import { auth } from "./firebase";
 import "./login.css";
@@ -43,6 +46,17 @@ const Login = () => {
       return;
     }
     console.log("Registering with email: ", email, passwordInput1);
+    createUserWithEmailAndPassword(auth, email, passwordInput1)
+      .then((_userCredential) => {
+        // Signed up
+        // const user = userCredential.user;
+        // ...
+      })
+      .catch((error) => {
+        // const errorCode = error.code;
+        // const errorMessage = error.message;
+        // ..
+      });
   };
 
   return (
