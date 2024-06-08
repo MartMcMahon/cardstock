@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
+import { getAuth, signOut } from "firebase/auth";
 import { debounce } from "lodash";
 import { useSelect } from "./hooks/useSelect";
 import CardMarketButtons from "./cardMarketButtons";
@@ -31,7 +32,8 @@ const Dashboard = () => {
   const cardSearchRef = useRef<HTMLDivElement>(null);
 
   const logout = () => {
-    dispatch({ type: "logout" });
+    const auth = getAuth();
+    signOut(auth);
   };
 
   useEffect(() => {
