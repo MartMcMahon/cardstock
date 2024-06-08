@@ -8,7 +8,11 @@ const Login = () => {
   const { currentUser } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [_loading, setLoading] = useState(true); // State to handle loading state
+  const [passwordInput1, setPasswordInput1] = useState("");
+  const [passwordInput2, setPasswordInput2] = useState("");
+  const [_loading, setLoading] = useState(true);
+
+  const [isLoginPanel, setIsLoginPanel] = useState(true);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -33,29 +37,85 @@ const Login = () => {
     }
   };
 
+  const handleRegister = async () => {
+    if (passwordInput1 !== passwordInput2) {
+      console.error("Passwords do not match");
+      return;
+    }
+    console.log("Registering with email: ", email, passwordInput1);
+  };
+
   return (
     <div className="container">
-      <div className="login-form">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleLogin();
+      <div className="login-header">
+        <div
+          className={"login-title" + (isLoginPanel ? " active" : "")}
+          onClick={() => {
+            setIsLoginPanel(true);
           }}
         >
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button onClick={handleLogin}>Login</button>
-        </form>
+          Login
+        </div>
+        <div
+          className={"signup-title" + (!isLoginPanel ? " active" : "")}
+          onClick={() => {
+            setIsLoginPanel(false);
+          }}
+        >
+          Register
+        </div>
+      </div>
+      <div className={"login-form" + (isLoginPanel ? "" : " register")}>
+        {isLoginPanel ? (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleLogin();
+            }}
+          >
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button onClick={handleLogin}>Login</button>
+          </form>
+        ) : (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleRegister();
+            }}
+          >
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={passwordInput1}
+              onChange={(e) => setPasswordInput1(e.target.value)}
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={passwordInput2}
+              onChange={(e) => setPasswordInput2(e.target.value)}
+            />
+            <button onClick={handleRegister}>Sign Up</button>
+          </form>
+        )}
       </div>
     </div>
   );

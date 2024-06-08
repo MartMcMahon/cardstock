@@ -3,30 +3,79 @@ body {
   justify-content: center;
 }
 
-.sign-up {
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-  width: 100%;
-}
-
 .container {
   align-items: center;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   margin: auto;
-  width: 100%;
+  max-width: 250px;
+  min-width: 200px;
+  width: 60%;
   height: 100vh;
 
-  .login-form {
-    max-width: 40%;
+  .login-header {
+    border: 1px solid #000;
+    border-bottom: none;
+    border-top: none;
+    border-radius: 6px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    display: flex;
+    justify-content: space-around;
+    max-width: 100%;
+    width: 100%;
+
+    div {
+      background-color: #303030;
+      border-bottom: 1px solid #000;
+      border-top: 1px solid #000;
+      border-radius: 6px;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+
+    div:first-child {
+      border-right: 1px solid #000;
+    }
+
+    div:last-child {
+      border-left: 1px solid #000;
+    }
+
+    div.active {
+      border-bottom: none;
+    }
   }
+}
+
+.login-form {
+  background-color: #303030;
+  border: 1px solid #000;
+  border-top: none;
+  border-radius: 6px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  height: 166px;
+  transition: height 0.15s ease-in;
+}
+
+.login-form.register {
+  height: 200px;
+  padding: 10px 0;
 }
 
 form {
   display: flex;
   flex-direction: column;
+  width: 100%;
 
   input {
     line-height: 2;
