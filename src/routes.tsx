@@ -1,6 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
-import AuthGate from "./authGate";
 import Dashboard from "./dashboard";
 import Login from "./login";
 // import Portfolio from "./components/portfolio";
@@ -16,18 +15,12 @@ const routes = createBrowserRouter([
     element: <App />,
     children: [
       {
-        path: "",
-        element: <AuthGate />,
-        children: [
-          {
-            path: "/",
-            element: <Dashboard />,
-          },
-          {
-            path: "/card/:id",
-            element: <Card />,
-          },
-        ],
+        path: "/",
+        element: <Dashboard />,
+      },
+      {
+        path: "/card/:id",
+        element: <Card />,
       },
     ],
   },
