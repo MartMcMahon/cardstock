@@ -1,19 +1,40 @@
 import express from "express";
+import cors from "cors";
 import pool from "./database";
 
 const app = express();
 const port = 3000;
 
+const corsOptions = {
+  origin: true,
+};
 app.use(express.json());
+app.use(cors(corsOptions));
 
 app.get("/", (req, res) => {
   res.send("Hello, world!");
 });
 
-app.get("/user/:id", async (req, res) => {
+app.post("/user/:uid", async (req, res) => {
   try {
-    const { id } = req.params;
-    const result = await pool.query("SELECT * FROM users WHERE id = $1", [id]);
+    const { uid, email } = req.body;
+    const result = await pool.query(
+      "INSERT INTO users (uid, email) VALUES ($1, $2);",
+      [uid, email]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server error");
+  }
+});
+
+app.get("/user/:uid", async (req, res) => {
+  try {
+    const { uid } = req.params;
+    const result = await pool.query("SELECT * FROM users WHERE uid = $1", [
+      uid,
+    ]);
     res.json(result.rows);
   } catch (err) {
     console.error(err);

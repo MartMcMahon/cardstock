@@ -1,0 +1,11 @@
+asmo
+"id": "d99a9a7d-d9ca-4c11-80ab-e39d5943a315",
+"oracle_id": "1f74e26f-5cf3-4b0e-bcc6-f858599474fc",
+
+"name": "Spark Elemental",
+"id": "09e7dfad-aca9-498d-bd1c-5503b411ca5f",
+"oracle_id": "50608b7e-b6b2-40ca-91ec-db3e03dbb1af",
+
+"name": "Gimli, Mournful Avenger",
+"id": "df4be38c-3f93-4ff4-bff4-94753b96f2f3",
+"oracle_id": "9f3941d8-b4d2-4faf-881a-f15973b4368d",

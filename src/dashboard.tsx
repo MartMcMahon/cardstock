@@ -10,7 +10,7 @@ import Networth from "./networth";
 import { Dispatch } from "./store";
 import { fetchCardById, fetchRandomCard, searchByName } from "./scryfall";
 import { clearSearchResults } from "./scryfall_reducer";
-import { Card } from "./types/card";
+import { Card  } from "./types/card";
 import "./dashboard.css";
 
 const Dashboard = () => {
@@ -21,7 +21,7 @@ const Dashboard = () => {
     mouseCard,
     mousePos,
     selectedCard,
-    selectedCardIsLoading,
+    // selectedCardIsLoading,
     simple_price,
   } = useSelect((state) => state.main);
   const { isLoading, searchResults } = useSelect((state) => state.scryfall);
@@ -53,11 +53,11 @@ const Dashboard = () => {
     };
   }, [setSearchResultsPos]);
 
-  useEffect(() => {
-    if (searchResults) {
-      setSearchResultsChunk(searchResults.data.slice(0, 10));
-    }
-  }, [searchResults]);
+  // useEffect(() => {
+  //   if (searchResults) {
+  //     setSearchResultsChunk(searchResults.data.slice(0, 10));
+  //   }
+  // }, [searchResults]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const debouncedNameSearch = debounce(() => {
@@ -93,7 +93,7 @@ const Dashboard = () => {
               type="text"
               onChange={handleSearch}
               onFocus={handleSearch}
-              onBlur={(e) => {
+              onBlur={() => {
                 dispatch(clearSearchResults());
               }}
               placeholder="card name"
@@ -147,8 +147,7 @@ const Dashboard = () => {
 
                   return (
                     <div className="portfolioCardEntry">
-                      <CardNameLink card={card} isSearchResults={false} />
-                      <div>{amount !== 0 && `: ${amount}`}</div>
+                      <CardNameLink card={card} isSearchResults={false} amount={amount} />
                     </div>
                   );
                 }

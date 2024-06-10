@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from "firebase/auth";
 import { useAuth } from "./hooks/useAuth";
 import { auth } from "./firebase";
+import { createUserData, getUserData } from "./user";
+import { Dispatch } from "./store";
 import "./login.css";
 
 const Login = () => {
@@ -14,18 +17,18 @@ const Login = () => {
   const [passwordInput1, setPasswordInput1] = useState("");
   const [passwordInput2, setPasswordInput2] = useState("");
   const [_loading, setLoading] = useState(true);
-
   const [isLoginPanel, setIsLoginPanel] = useState(true);
+  const dispatch = useDispatch<Dispatch>();
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      if (currentUser) {
-        window.location.href = "/";
-      }
-      setLoading(false);
-    };
-    fetchUserData();
-  }, [currentUser]);
+  // useEffect(() => {
+  //   const fetchUserData = async () => {
+  //     if (currentUser) {
+  //       window.location.href = "/";
+  //     }
+  //     setLoading(false);
+  //   };
+  //   fetchUserData();
+  // }, [currentUser]);
 
   const handleLogin = async () => {
     try {
@@ -41,18 +44,19 @@ const Login = () => {
   };
 
   const handleRegister = async () => {
+    console.log("handleRegister");
     if (passwordInput1 !== passwordInput2) {
       console.error("Passwords do not match");
       return;
     }
-    console.log("Registering with email: ", email, passwordInput1);
     createUserWithEmailAndPassword(auth, email, passwordInput1)
-      .then((_userCredential) => {
+      .then((res): any => {
+        dispatch(createUserData(res.user.uid, res.user.email || ""));
         // Signed up
         // const user = userCredential.user;
         // ...
       })
-      .catch((error) => {
+      .catch(() => {
         // const errorCode = error.code;
         // const errorMessage = error.message;
         // ..
@@ -100,7 +104,7 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            <button onClick={handleLogin}>Login</button>
+            <button>Login</button>
           </form>
         ) : (
           <form
@@ -127,7 +131,9 @@ const Login = () => {
               value={passwordInput2}
               onChange={(e) => setPasswordInput2(e.target.value)}
             />
-            <button onClick={handleRegister}>Sign Up</button>
+            <button>
+              Sign Up
+            </button>
           </form>
         )}
       </div>
