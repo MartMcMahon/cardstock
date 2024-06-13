@@ -9,3 +9,6 @@ asmo
 "name": "Gimli, Mournful Avenger",
 "id": "df4be38c-3f93-4ff4-bff4-94753b96f2f3",
 "oracle_id": "9f3941d8-b4d2-4faf-881a-f15973b4368d",
+
+
+41d6d379-b991-48da-a6b3-a4a38931057c

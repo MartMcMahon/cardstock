@@ -1,34 +1,24 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from "firebase/auth";
-import { useAuth } from "./hooks/useAuth";
 import { auth } from "./firebase";
 import { createUserData, getUserData } from "./user";
 import { Dispatch } from "./store";
 import "./login.css";
 
 const Login = () => {
-  const { currentUser } = useAuth();
+  const dispatch = useDispatch<Dispatch>();
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordInput1, setPasswordInput1] = useState("");
   const [passwordInput2, setPasswordInput2] = useState("");
-  const [_loading, setLoading] = useState(true);
   const [isLoginPanel, setIsLoginPanel] = useState(true);
-  const dispatch = useDispatch<Dispatch>();
-
-  // useEffect(() => {
-  //   const fetchUserData = async () => {
-  //     if (currentUser) {
-  //       window.location.href = "/";
-  //     }
-  //     setLoading(false);
-  //   };
-  //   fetchUserData();
-  // }, [currentUser]);
 
   const handleLogin = async () => {
     try {
@@ -38,6 +28,8 @@ const Login = () => {
         password
       );
       console.log("User signed in: ", userCredential.user);
+      dispatch(getUserData(userCredential.user.uid));
+      navigate("/");
     } catch (error) {
       console.error("Error signing in: ", error);
     }
@@ -52,14 +44,11 @@ const Login = () => {
     createUserWithEmailAndPassword(auth, email, passwordInput1)
       .then((res): any => {
         dispatch(createUserData(res.user.uid, res.user.email || ""));
-        // Signed up
-        // const user = userCredential.user;
-        // ...
+        navigate("/");
       })
-      .catch(() => {
-        // const errorCode = error.code;
-        // const errorMessage = error.message;
-        // ..
+      .catch((error) => {
+        const errorMessage = error.message;
+        console.error("Error creating user: ", errorMessage);
       });
   };
 
@@ -131,9 +120,7 @@ const Login = () => {
               value={passwordInput2}
               onChange={(e) => setPasswordInput2(e.target.value)}
             />
-            <button>
-              Sign Up
-            </button>
+            <button>Sign Up</button>
           </form>
         )}
       </div>

@@ -29,3 +29,10 @@ dist-ssr
 
 # secrets
 .env*
+server/*.sql
+server/docker.sh
+
+# raw data
+All*.json
+price_history.csv
+printings.csv

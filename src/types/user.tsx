@@ -1,6 +1,7 @@
 type User = {
-  id: string;
-  username: string;
+  uid: string;
   email: string;
+  cash: number;
+  cardPositions: { [key: string]: number };
 };
 export type { User };

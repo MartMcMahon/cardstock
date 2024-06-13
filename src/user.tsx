@@ -16,8 +16,10 @@ const createUserData = (uid: string, email: string) => {
     });
     if (!res.ok) {
       dispatch(fetchFailed("Failed to create user data"));
+      return;
     }
     const data = await res.json();
+    dispatch(fetchUserDataSuccess(data));
     return data;
   };
 };
@@ -35,4 +37,23 @@ const getUserData = (uid: string) => {
   };
 };
 
-export { createUserData, getUserData };
+const setCardPosition= (uid: string, uuid: string, amount: number ) => {
+  return async (dispatch: Dispatch) => {
+    const res = await fetch("http://localhost:3000/buy/" + uid, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({uuid, amount }),
+    });
+    if (!res.ok) {
+      dispatch(fetchFailed("Failed to create user data"));
+      return;
+    }
+    const data = await res.json();
+    dispatch(setCardPositionSuccess(data));
+    return data;
+  };
+}
+
+export { createUserData, getUserData, setCardPosition };

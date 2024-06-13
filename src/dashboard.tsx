@@ -10,13 +10,11 @@ import Networth from "./networth";
 import { Dispatch } from "./store";
 import { fetchCardById, fetchRandomCard, searchByName } from "./scryfall";
 import { clearSearchResults } from "./scryfall_reducer";
-import { Card  } from "./types/card";
+import { Card } from "./types/card";
 import "./dashboard.css";
 
 const Dashboard = () => {
   const {
-    cardPositions,
-    cash,
     cardData,
     mouseCard,
     mousePos,
@@ -24,6 +22,10 @@ const Dashboard = () => {
     // selectedCardIsLoading,
     simple_price,
   } = useSelect((state) => state.main);
+  const { cash, cardPositions } = useSelect((state) => state.user);
+  console.log(cash);
+  console.log(cardPositions);
+
   const { isLoading, searchResults } = useSelect((state) => state.scryfall);
   const dispatch = useDispatch<Dispatch>();
   const [cardNameInput, setCardNameInput] = useState("");
@@ -53,11 +55,11 @@ const Dashboard = () => {
     };
   }, [setSearchResultsPos]);
 
-  // useEffect(() => {
-  //   if (searchResults) {
-  //     setSearchResultsChunk(searchResults.data.slice(0, 10));
-  //   }
-  // }, [searchResults]);
+  useEffect(() => {
+    if (searchResults) {
+      setSearchResultsChunk(searchResults.data.slice(0, 10));
+    }
+  }, [searchResults]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const debouncedNameSearch = debounce(() => {
@@ -108,7 +110,13 @@ const Dashboard = () => {
                 }}
               >
                 {searchResultsChunk.map((c: Card) => {
-                  return <CardNameLink card={c} isSearchResults={true} />;
+                  return (
+                    <CardNameLink
+                      card={c}
+                      isSearchResults={true}
+                      amount={0}
+                    />
+                  );
                 })}
               </div>
             )}
@@ -147,7 +155,11 @@ const Dashboard = () => {
 
                   return (
                     <div className="portfolioCardEntry">
-                      <CardNameLink card={card} isSearchResults={false} amount={amount} />
+                      <CardNameLink
+                        card={card}
+                        isSearchResults={false}
+                        amount={amount}
+                      />
                     </div>
                   );
                 }

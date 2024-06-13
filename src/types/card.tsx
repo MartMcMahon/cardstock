@@ -12,5 +12,6 @@ type BasicCard = {
     tix: number;
   };
 };
+
 export type { BasicCard };
 export type Card = BasicCard | ScryfallCard;

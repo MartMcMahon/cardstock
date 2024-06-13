@@ -9,11 +9,11 @@ import "./cardNameLink.css";
 const CardNameLink = ({
   card,
   isSearchResults,
-  amount
+  amount,
 }: {
   card: Card;
   isSearchResults: boolean;
-  amount: number;
+  amount: number | null;
 }) => {
   const dispatch = useDispatch<Dispatch>();
 
@@ -54,7 +54,7 @@ const CardNameLink = ({
       onMouseLeave={handleMouseLeave}
     >
       {card.name}
-                      <div>{amount !== 0 && `: ${amount}`}</div>
+      <div>{amount !== 0 && `: ${amount}`}</div>
     </div>
   );
 };
