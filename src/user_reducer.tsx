@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { User } from "./types/user";
-import {setCardPosition} from "./user";
+import { setCardPosition } from "./user";
 
 interface UserState {
   cash: number;
@@ -40,7 +40,10 @@ const userSlice = createSlice({
       state.isLoading = false;
       state.error = action.payload;
     },
-    setCardPositionSuccess(state, action: PayloadAction<{[key: string]: number}>) {
+    setCardPositionSuccess(
+      state,
+      action: PayloadAction<{ [key: string]: number }>
+    ) {},
   },
 });
 
