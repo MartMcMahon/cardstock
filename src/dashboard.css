@@ -129,5 +129,32 @@ button {
       width: auto;
     }
   }
+}
 
+.loading {
+  display: inline-block;
+  height: 1em;
+  line-height: 1em;
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+  width: .8em;
+}
+@keyframes rotateAnimation {
+  from {
+    transform: rotate(0deg); /* Start at 0 degrees */
+  }
+  to {
+    transform: rotate(360deg); /* Rotate to 360 degrees */
+  }
+}
+
+.loading-rotation {
+  animation: rotateAnimation 2s linear infinite;
+  /*
+    - `rotateAnimation`: The name of the keyframes
+    - `2s`: Duration of the animation (2 seconds in this case)
+    - `linear`: Animation timing function for a smooth, constant rotation
+    - `infinite`: Repeats the animation indefinitely
+  */
 }

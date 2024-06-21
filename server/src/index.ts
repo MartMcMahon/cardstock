@@ -59,14 +59,31 @@ WHERE cards.uuid = $1;`,
   }
 });
 
-app.post("/buy/:uid", async (req, res) => {
+app.post("/buy/:uuid", async (req, res) => {
   try {
-    const { uid, uuid, amount, cost } = req.params;
-    const date = Math.floor(Date.now() / 1000);
-    const res = await pool.query(
-      "INSERT INTO transactions (uid, uuid, amount, cost, date) VALUES ($1, $2, $3, $4, $5);",
-      [uid, uuid, amount, cost, date]
+    const { uuid } = req.params;
+    const { uid, amount, cost } = req.body;
+    // const date = Math.floor(Date.now() / 1000);
+    const now = new Date(Date.now());
+    const trade_date = now.toISOString();
+    const _tx_query = await pool.query(
+      "INSERT INTO transactions (uid, uuid, amount, cost, trade_date) VALUES ($1, $2, $3, $4, $5) RETURNING *;",
+      [uid, uuid, amount, cost, trade_date]
     );
+    // const card_pos_query = await pool.query(
+    //   `UPDATE users SET
+    // card_positions = jsonb_set(
+    // jsonb_set(card_positions, '{${uuid}, amount}', '${amount}', true
+    // ), '{${uuid}, cost}', '${cost}', true)
+    // WHERE uid = '${uid}';`
+    // );
+    // console.log("updated users", card_pos_query, amount);
+    // res.json(card_pos_query.rows);
+    // } catch (err) {
+    //   console.error(err);
+    //   res.status(500).send("Server error");
+    // }
+    return res.json(_tx_query.rows);
   } catch (err) {
     console.error(err);
     res.status(500).send("Server error");
@@ -101,10 +118,6 @@ app.get("/price_history/:card_id", async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
-});
-
 const getTransactionsForUser = async (uid: string) => {
   try {
     const result = await pool.query(
@@ -116,5 +129,20 @@ const getTransactionsForUser = async (uid: string) => {
     console.error(err);
     return [];
   }
-}
+};
+
+app.get("/tx/:uid", async (req, res) => {
+  try {
+    const { uid } = req.params;
+    const result = await getTransactionsForUser(uid);
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server error");
+  }
+});
+
+app.listen(port, () => {
+  console.log(`Server is running at http://localhost:${port}`);
+});
 

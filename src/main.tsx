@@ -16,3 +16,4 @@ ReactDOM.createRoot(document.getElementById("root") || new HTMLElement()).render
     </AuthProvider>
   </React.StrictMode>
 );
+document.title = 'Cardstock';

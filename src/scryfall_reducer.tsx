@@ -5,7 +5,7 @@ interface ScryfallState {
   isLoading: boolean;
   card: any;
   error: string | null;
-  searchResults: [ScryfallCard] | null;
+  searchResults: ScryfallCard[] | null;
 }
 
 const initialState: ScryfallState = {
@@ -44,7 +44,7 @@ const scryfallSlice = createSlice({
       state.isLoading = true;
       state.error = null;
     },
-    searchByNameSuccess(state, action: PayloadAction<[ScryfallCard]>) {
+    searchByNameSuccess(state, action: PayloadAction<ScryfallCard[]>) {
       state.isLoading = false;
       state.searchResults = action.payload;
     },

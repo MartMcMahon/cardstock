@@ -2,6 +2,11 @@ type User = {
   uid: string;
   email: string;
   cash: number;
-  cardPositions: { [key: string]: number };
+  cardPositions: { [key: string]: CardPosition };
 };
-export type { User };
+type CardPosition = {
+  uuid?: string;
+  amount: number;
+  cost: number;
+};
+export type { User, CardPosition };

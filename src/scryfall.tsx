@@ -63,6 +63,7 @@ const searchByName = (name: string) => {
         throw new Error("Failed to fetch card by name");
       }
       const data = await res.json();
+      console.log('scryall search by name data');
       dispatch(searchByNameSuccess(data));
       dispatch(fillCardData({ [data.id]: data }));
     } catch (err: any) {
