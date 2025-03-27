@@ -18,19 +18,19 @@ const getSimplePrice = (card: Card): number => {
   if (card.prices.usd) {
     res = card.prices.usd;
   }
-  if (card.prices.usd_foil) {
+  else if (card.prices.usd_foil) {
     res = card.prices.usd_foil;
   }
-  if (card.prices.usd_etched) {
+  else if (card.prices.usd_etched) {
     res = card.prices.usd_etched;
   }
-  if (card.prices.eur) {
+  else if (card.prices.eur) {
     res = card.prices.eur;
   }
-  if (card.prices.eur_foil) {
+  else if (card.prices.eur_foil) {
     res = card.prices.eur_foil;
   }
-  if (card.prices.tix) {
+  else if (card.prices.tix) {
     res = card.prices.tix;
   }
   if (typeof res === "number") {

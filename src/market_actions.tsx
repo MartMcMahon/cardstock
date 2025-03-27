@@ -1,6 +1,5 @@
-import { fetchFailed } from "./api_reducer";
 import { Dispatch, RootState } from "./store";
-import { fetchUserDataReq, updateTxDataSuccess } from "./user_reducer";
+import { fetchTxDataReq, updateTxDataSuccess, txFailed } from "./user_reducer";
 
 const buy = (uid: string, uuid: string, amount: number) => {
   return async (dispatch: Dispatch, getState: () => RootState) => {
@@ -8,7 +7,7 @@ const buy = (uid: string, uuid: string, amount: number) => {
     const mainState = getState().main;
     const cost = amount * mainState.simple_price;
 
-    dispatch(fetchUserDataReq());
+    dispatch(fetchTxDataReq());
     const res = await fetch("http://localhost:3000/buy/" + uuid, {
       method: "POST",
       headers: {
@@ -17,7 +16,7 @@ const buy = (uid: string, uuid: string, amount: number) => {
       body: JSON.stringify({ uid, amount, cost }),
     });
     if (!res.ok) {
-      dispatch(fetchFailed("Failed to perform user transaction"));
+      dispatch(txFailed({ cost }));
       console.log("cardTransaction result", res);
       return;
     }

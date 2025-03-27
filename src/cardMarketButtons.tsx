@@ -28,9 +28,7 @@ const CardMarketButtons = () => {
       <button
         className="card-market-button"
         onClick={() => {
-          {
-            /* dispatch( sellCard({ card: selectedCard, amount: 1, id: selectedCard.id, })); */
-          }
+          dispatch(buy(currentUser.uid, selectedCard.id, -1));
         }}
       >
         Sell

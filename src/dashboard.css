@@ -84,9 +84,12 @@ button {
   }
 
   .graph-container {
+    align-items: center;
     display: flex;
     flex: 1;
     justify-content: center;
+    min-width: 400px;
+    min-height: 350px;
   }
 
   .price {

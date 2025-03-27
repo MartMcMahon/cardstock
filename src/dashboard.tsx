@@ -7,14 +7,18 @@ import CardMarketButtons from "./cardMarketButtons";
 import CardNameLink from "./cardNameLink";
 import Graph from "./graph";
 import Loading from "./loading";
-import Networth from "./networth";
+
 import { Dispatch } from "./store";
 import { fetchCardById, fetchRandomCard, searchByName } from "./scryfall";
 import { clearSearchResults } from "./scryfall_reducer";
+
 import { Card } from "./types/card";
 import { Tx } from "./types/market";
-import "./dashboard.css";
 import { CardPosition } from "./types/user";
+
+import "./dashboard.css";
+import { fetchFailed } from "./api_reducer";
+import PortfolioCardList from "./portfolioCardList";
 
 const Dashboard = () => {
   const {
@@ -25,16 +29,21 @@ const Dashboard = () => {
     // selectedCardIsLoading,
     simple_price,
   } = useSelect((state) => state.main);
-  const { cash, txData } = useSelect((state) => state.user);
-  const { isLoading, searchResults } = useSelect((state) => state.scryfall);
+  const {
+    cash,
+    isLoading: userIsLoading,
+    txData,
+    cardPositions,
+  } = useSelect((state) => state.user);
+  const { isLoading: scryfallIsLoading, searchResults } = useSelect(
+    (state) => state.scryfall
+  );
   const dispatch = useDispatch<Dispatch>();
 
   const [cardNameInput, setCardNameInput] = useState("");
   const [searchResultsPos, setSearchResultsPos] = useState({ top: 0, left: 0 });
   const [searchResultsChunk, setSearchResultsChunk] = useState([]);
-  const [cardPositions, setCardPositions] = useState<{
-    [key: string]: CardPosition;
-  }>({});
+  const [networth, setNetWorth] = useState(0);
   const [selectedCardAmount, setSelectedCardAmount] = useState(0);
 
   const cardSearchRef = useRef<HTMLDivElement>(null);
@@ -44,22 +53,46 @@ const Dashboard = () => {
     signOut(auth);
   };
 
-  useEffect(() => {
-    const cardPositions: { [key: string]: CardPosition } = {};
-    txData.forEach((tx: Tx) => {
-      if (tx.uuid in cardPositions) {
-        const prevAmount = cardPositions[tx.uuid].amount;
-        const prevCost = cardPositions[tx.uuid].cost;
-        cardPositions[tx.uuid] = {
-          amount: prevAmount + tx.amount,
-          cost: prevCost + tx.cost,
-        };
-      } else {
-        cardPositions[tx.uuid] = tx;
-      }
-    });
-    setCardPositions(cardPositions);
-  }, [txData]);
+  //   useEffect(() => {
+  //     const cardPositions: { [key: string]: CardPosition } = {};
+  //     let nw = 1000;
+  //     txData.forEach((tx: Tx) => {
+  //       if (tx.uuid in cardPositions) {
+  //         const prevAmount = cardPositions[tx.uuid].amount;
+  //         const prevCost = cardPositions[tx.uuid].cost;
+  //         cardPositions[tx.uuid] = {
+  //           uuid: tx.uuid,
+  //           amount: prevAmount + tx.amount,
+  //           cost: prevCost + tx.cost,
+  //         };
+  //       } else {
+  //         cardPositions[tx.uuid] = tx;
+  //       }
+  //       nw -= tx.cost;
+  //     });
+  //     setCardPositions(cardPositions);
+  //     setNetWorth(nw);
+  //   }, [txData]);
+
+  // useEffect(() => {
+  //   const getPrice = async (uuid: string) => {
+  //     const res = await fetch("http://localhost:3000/card/" + uuid);
+  //     if (!res.ok) {
+  //       dispatch(
+  //         fetchFailed(`failed to get current price user data for ${uuid}`)
+  //       );
+  //     }
+  //     const card = await res.json();
+
+  //     console.log("dashboard, get current price", card);
+  //   };
+
+  //   Object.entries(cardPositions).forEach(
+  //     ([uuid, pos]: [string, CardPosition]) => {
+  //       let p = getPrice(uuid);
+  //     }
+  //   );
+  // }, [cardPositions, dispatch]);
 
   // useEffect(() => {
   //   if (selectedCard && selectedCard.id in cardPositions) {
@@ -102,8 +135,8 @@ const Dashboard = () => {
   };
 
   const cardImg = () => {
-    if (isLoading) {
-      return <div>loading...</div>;
+    if (scryfallIsLoading) {
+      return <Loading />;
     }
     if (selectedCard && selectedCard.image_uris) {
       return (
@@ -115,6 +148,10 @@ const Dashboard = () => {
       );
     }
   };
+
+  if (userIsLoading) {
+    return <Loading />;
+  }
 
   return (
     <div className="main">
@@ -163,60 +200,36 @@ const Dashboard = () => {
 
       <div className="panels">
         <div className="left">
-          <div className="networth">
-            Value: <Networth />
-          </div>
+          <div className="networth">Value: {networth.toFixed(2)}</div>
           Cash : ${cash.toFixed(2)}
           <div>
-            <div className="portfolioCardList">
-              Your Cards
-              {Object.entries(
-                cardPositions as { [key: string]: CardPosition }
-              ).map(([id, pos]: [string, CardPosition]) => {
-                const { amount, _cost } = pos;
-                let card: Card;
-                if (id in cardData) {
-                  card = cardData[id];
-                } else {
-                  dispatch(fetchCardById(id));
-                  card = cardData[id];
-                }
-
-                return (
-                  <div className="portfolioCardEntry">
-                    <CardNameLink
-                      card={card}
-                      isSearchResults={false}
-                      amount={amount}
-                    />
-                  </div>
-                );
-              })}
-            </div>
+            <PortfolioCardList />
           </div>
         </div>
         <div className="center">
           {selectedCard && (
             <>
               <div className="name">
-                <h2>{selectedCard.name}</h2>
+                {scryfallIsLoading ? <Loading /> : <h2>{selectedCard.name}</h2>}
               </div>
               <div className="graph-container">
-                <Graph />
+                {scryfallIsLoading ? <Loading /> : <Graph />}
               </div>
               <div className="price">
                 <h3>{simple_price}</h3>
               </div>
               <CardMarketButtons />
               <div className="quantity-text">
-                You have {cardPositions[selectedCard.id] && cardPositions[selectedCard.id].amount || 0} of this
-                card
+                You have{" "}
+                {(cardPositions[selectedCard.id] &&
+                  cardPositions[selectedCard.id].amount) ||
+                  0}{" "}
+                of this card
               </div>
             </>
           )}
         </div>
         <div className="right">
-          {isLoading && <Loading />}
           <div className="card-display">{cardImg()}</div>
         </div>
       </div>

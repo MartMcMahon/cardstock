@@ -5,8 +5,9 @@ type User = {
   cardPositions: { [key: string]: CardPosition };
 };
 type CardPosition = {
-  uuid?: string;
+  uuid: string;
   amount: number;
   cost: number;
+  diff?: number;
 };
 export type { User, CardPosition };
